@@ -42,13 +42,14 @@ Dedicated users = 100
 Dedicated users active at peak = 30
 Shared users = 300
 Shared users active at peak = 75
+Cloud Apps users active at peak = 0
 ```
 
 The calculator recommends the greater of:
 
 ```text
-capacity licenses = ceiling(dedicated users / 3) + shared users active at peak
-concurrency licenses = dedicated users active at peak + shared users active at peak
+capacity licenses = ceiling(dedicated users / 3) + shared users active at peak + Cloud Apps users active at peak
+concurrency licenses = dedicated users active at peak + shared users active at peak + Cloud Apps users active at peak
 ```
 
 ## Local use

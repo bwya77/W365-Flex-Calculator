@@ -395,6 +395,7 @@
     .yellow { color: var(--yellow); }
     .red { color: var(--red); }
     .blue { color: var(--ms-blue); }
+    .purple { color: var(--purple); }
 
     .unit-grid {
       display: grid;
@@ -681,6 +682,16 @@
               </div>
               <span class="hint">Shared pool Cloud PCs needed for expected peak demand.</span>
             </label>
+
+            <label>
+              <strong>Cloud Apps users active at peak</strong>
+              <div class="number-row">
+                <button data-step="planCloudAppsPeak" data-delta="-1" aria-label="Decrease peak Cloud Apps users">-</button>
+                <input id="planCloudAppsPeak" type="number" min="0" step="1" value="0">
+                <button data-step="planCloudAppsPeak" data-delta="1" aria-label="Increase peak Cloud Apps users">+</button>
+              </div>
+              <span class="hint">Cloud Apps pool Cloud PCs needed for expected peak app demand.</span>
+            </label>
           </div>
 
           <div class="button-row">
@@ -716,6 +727,11 @@
             <div id="dedicatedLeft" class="value">0</div>
             <div id="dedicatedLeftNote" class="note">Dedicated capacity fills 3 slots per license unit.</div>
           </article>
+          <article class="metric">
+            <div id="metricFiveLabel" class="label">Cloud Apps pool PCs</div>
+            <div id="cloudAppsMetric" class="value">0</div>
+            <div id="cloudAppsMetricNote" class="note">Cloud Apps pools use one full license unit each.</div>
+          </article>
         </section>
 
         <section class="panel">
@@ -748,7 +764,7 @@
 
   <script>
     const currentInputIds = ["licenses", "dedicated", "shared", "cloudApps"];
-    const planningInputIds = ["planDedicatedUsers", "planDedicatedPeak", "planSharedUsers", "planSharedPeak"];
+    const planningInputIds = ["planDedicatedUsers", "planDedicatedPeak", "planSharedUsers", "planSharedPeak", "planCloudAppsPeak"];
     const inputIds = [...currentInputIds, ...planningInputIds];
     let currentMode = "current";
     let visualFilter = "all";
@@ -761,7 +777,7 @@
       element.className = `value ${color}`.trim();
     }
 
-    function setMetricText(one, two, three, four) {
+    function setMetricText(one, two, three, four, five) {
       byId("metricOneLabel").textContent = one.label;
       byId("usedUnitsNote").textContent = one.note;
       byId("metricTwoLabel").textContent = two.label;
@@ -770,6 +786,8 @@
       byId("sharedLeftNote").textContent = three.note;
       byId("metricFourLabel").textContent = four.label;
       byId("dedicatedLeftNote").textContent = four.note;
+      byId("metricFiveLabel").textContent = five.label;
+      byId("cloudAppsMetricNote").textContent = five.note;
     }
 
     function calculate() {
@@ -797,12 +815,14 @@
         { label: "License units used", note: `${sharedUnits} shared units + ${dedicatedUnits} dedicated units` },
         { label: "License units left", note: "A remaining unit can become 1 shared PC or 3 dedicated PCs." },
         { label: "More shared PCs", note: "Shared pools use one full license unit each." },
-        { label: "More dedicated PCs", note: "Dedicated capacity fills 3 slots per license unit." }
+        { label: "More dedicated PCs", note: "Dedicated capacity fills 3 slots per license unit." },
+        { label: "Cloud Apps pool PCs", note: "Cloud Apps pools use one full license unit each." }
       );
       setMetric("usedUnits", usedUnits, overUnits > 0 ? "red" : usedUnits === licenses ? "yellow" : "green");
       setMetric("unitsLeft", unitsLeft, unitsLeft === 0 ? "yellow" : "green");
       setMetric("sharedLeft", moreShared, moreShared === 0 ? "yellow" : "green");
       setMetric("dedicatedLeft", moreDedicated, moreDedicated === 0 ? "yellow" : "green");
+      setMetric("cloudAppsMetric", cloudApps, cloudApps === 0 ? "yellow" : "purple");
 
       renderAnswer({ licenses, dedicated, shared, cloudApps, sharedUnits, dedicatedUnits, usedUnits, unitsLeft, overUnits, moreDedicated, moreShared });
       renderUnits({ licenses, dedicated, shared, cloudApps, sharedUnits, dedicatedUnits, usedUnits });
@@ -813,12 +833,14 @@
       const dedicatedPeak = readNumber("planDedicatedPeak");
       const sharedUsers = readNumber("planSharedUsers");
       const sharedPeak = readNumber("planSharedPeak");
+      const cloudAppsPeak = readNumber("planCloudAppsPeak");
       const dedicatedCloudPcs = dedicatedUsers;
       const sharedCloudPcs = sharedPeak;
+      const cloudAppsCloudPcs = cloudAppsPeak;
       const dedicatedUnits = Math.ceil(dedicatedCloudPcs / 3);
-      const sharedUnits = sharedCloudPcs;
+      const sharedUnits = sharedCloudPcs + cloudAppsCloudPcs;
       const capacityLicenses = dedicatedUnits + sharedUnits;
-      const peakSessions = dedicatedPeak + sharedPeak;
+      const peakSessions = dedicatedPeak + sharedPeak + cloudAppsPeak;
       const recommendedLicenses = Math.max(capacityLicenses, peakSessions);
       const concurrencyGap = Math.max(0, peakSessions - capacityLicenses);
 
@@ -827,20 +849,24 @@
         { label: "Flex licenses needed", note: `${capacityLicenses} for Cloud PC capacity, ${peakSessions} for peak sessions` },
         { label: "Dedicated Cloud PCs", note: "Dedicated users each need their own Cloud PC." },
         { label: "Shared pool Cloud PCs", note: "Plan one shared pool Cloud PC per expected active shared user." },
-        { label: "Peak active sessions", note: "Flex licenses also set the tenant-wide active session limit for this size." }
+        { label: "Peak active sessions", note: "Flex licenses also set the tenant-wide active session limit for this size." },
+        { label: "Cloud Apps pool PCs", note: "Plan one Cloud Apps pool Cloud PC per expected active Cloud Apps user." }
       );
       setMetric("usedUnits", recommendedLicenses, "blue");
       setMetric("unitsLeft", dedicatedCloudPcs, dedicatedCloudPcs === 0 ? "yellow" : "green");
       setMetric("sharedLeft", sharedCloudPcs, sharedCloudPcs === 0 ? "yellow" : "green");
       setMetric("dedicatedLeft", peakSessions, peakSessions > recommendedLicenses ? "red" : "green");
+      setMetric("cloudAppsMetric", cloudAppsCloudPcs, cloudAppsCloudPcs === 0 ? "yellow" : "purple");
 
       renderPlanningAnswer({
         dedicatedUsers,
         dedicatedPeak,
         sharedUsers,
         sharedPeak,
+        cloudAppsPeak,
         dedicatedCloudPcs,
         sharedCloudPcs,
+        cloudAppsCloudPcs,
         dedicatedUnits,
         sharedUnits,
         capacityLicenses,
@@ -852,7 +878,7 @@
         licenses: recommendedLicenses,
         dedicated: dedicatedCloudPcs,
         shared: sharedCloudPcs,
-        cloudApps: 0,
+        cloudApps: cloudAppsCloudPcs,
         sharedUnits,
         dedicatedUnits,
         usedUnits: capacityLicenses
@@ -895,7 +921,7 @@
       answer.className = "answer good";
       answer.open = wasOpen;
       title.textContent = `${model.recommendedLicenses} Flex licenses needed for this plan.`;
-      text.textContent = `That covers ${model.dedicatedUsers} dedicated users with ${model.dedicatedUnits} license units, plus ${model.sharedPeak} shared pool Cloud PCs for ${model.sharedUsers} shared users. Your expected peak is ${model.peakSessions} active sessions.`;
+      text.textContent = `That covers ${model.dedicatedUsers} dedicated users with ${model.dedicatedUnits} license units, plus ${model.sharedPeak} shared pool Cloud PCs for ${model.sharedUsers} shared users, plus ${model.cloudAppsPeak} Cloud Apps pool Cloud PCs. Your expected peak is ${model.peakSessions} active sessions.`;
 
       if (model.concurrencyGap > 0) {
         answer.className = "answer warn";
