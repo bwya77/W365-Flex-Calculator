@@ -191,14 +191,19 @@
       padding: 24px;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
+      border-left: 6px solid var(--border);
       background: var(--surface);
       display: grid;
       gap: 14px;
     }
 
-    .answer.good { border-color: rgba(63, 185, 80, 0.45); background: linear-gradient(180deg, var(--surface), var(--green-soft)); }
-    .answer.warn { border-color: rgba(210, 153, 34, 0.50); background: linear-gradient(180deg, var(--surface), var(--yellow-soft)); }
-    .answer.bad { border-color: rgba(248, 81, 73, 0.48); background: linear-gradient(180deg, var(--surface), var(--red-soft)); }
+    .answer.good { border-left-color: var(--green); }
+    .answer.warn { border-left-color: var(--yellow); }
+    .answer.bad { border-left-color: var(--red); }
+
+    .answer.good h2 { color: var(--green); }
+    .answer.warn h2 { color: var(--yellow); }
+    .answer.bad h2 { color: var(--red); }
 
     .answer h2 {
       margin: 0;
