@@ -1,0 +1,538 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Windows 365 Flex Calculator</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --accent: #4091f2;
+      --accent-soft: rgba(64, 145, 242, 0.16);
+      --bg: #07111f;
+      --panel: #0d1b2e;
+      --panel-2: #10243d;
+      --border: #203a5c;
+      --text: #f5f7fb;
+      --muted: #b8c4d6;
+      --subtle: #7f91aa;
+      --green: #47d18c;
+      --yellow: #ffd166;
+      --red: #ff6b6b;
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(64, 145, 242, 0.24), transparent 36rem),
+        radial-gradient(circle at 80% 10%, rgba(71, 209, 140, 0.12), transparent 34rem),
+        var(--bg);
+      color: var(--text);
+    }
+
+    main {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 64px;
+    }
+
+    header {
+      display: grid;
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow {
+      color: var(--accent);
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.78rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(2.2rem, 6vw, 5.1rem);
+      line-height: 0.92;
+      letter-spacing: -0.08em;
+      max-width: 900px;
+    }
+
+    .lead {
+      margin: 0;
+      color: var(--muted);
+      max-width: 780px;
+      font-size: 1.1rem;
+      line-height: 1.65;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 360px 1fr;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .panel {
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)), var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+    }
+
+    .panel h2, .panel h3 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: -0.02em;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 18px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .panel-body { padding: 20px; }
+
+    .inputs {
+      display: grid;
+      gap: 18px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      line-height: 1.35;
+    }
+
+    label strong {
+      color: var(--text);
+      font-size: 0.98rem;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #071525;
+      color: var(--text);
+      padding: 12px 14px;
+      font: inherit;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    .hint {
+      color: var(--subtle);
+      font-size: 0.82rem;
+    }
+
+    .results {
+      display: grid;
+      gap: 22px;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .card {
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 16px;
+      min-height: 126px;
+    }
+
+    .card .label {
+      color: var(--muted);
+      font-size: 0.82rem;
+      min-height: 2.2em;
+    }
+
+    .card .value {
+      font-size: 2.4rem;
+      line-height: 1;
+      font-weight: 800;
+      margin: 12px 0 8px;
+      letter-spacing: -0.05em;
+    }
+
+    .card .note {
+      color: var(--subtle);
+      font-size: 0.82rem;
+      line-height: 1.35;
+    }
+
+    .value.green { color: var(--green); }
+    .value.yellow { color: var(--yellow); }
+    .value.red { color: var(--red); }
+
+    .bar {
+      height: 28px;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #071525;
+      border: 1px solid var(--border);
+      display: flex;
+    }
+
+    .bar span {
+      display: block;
+      min-width: 0;
+    }
+
+    .bar .shared { background: #63a4ff; }
+    .bar .dedicated { background: #47d18c; }
+    .bar .free { background: #233a5b; }
+    .bar .over { background: var(--red); }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      color: var(--muted);
+      font-size: 0.86rem;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      gap: 7px;
+      align-items: center;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 4px;
+      background: var(--accent);
+    }
+
+    .swatch.shared { background: #63a4ff; }
+    .swatch.dedicated { background: #47d18c; }
+    .swatch.free { background: #233a5b; }
+    .swatch.over { background: var(--red); }
+
+    .slots {
+      display: grid;
+      gap: 12px;
+    }
+
+    .slot-row {
+      display: grid;
+      grid-template-columns: 96px 1fr;
+      gap: 12px;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .slot-cells {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(36px, 1fr));
+      gap: 8px;
+    }
+
+    .slot {
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #071525;
+      display: grid;
+      place-items: center;
+      color: var(--subtle);
+      font-weight: 700;
+    }
+
+    .slot.used {
+      background: rgba(71, 209, 140, 0.18);
+      border-color: rgba(71, 209, 140, 0.55);
+      color: var(--green);
+    }
+
+    .status {
+      border-radius: 18px;
+      padding: 16px;
+      border: 1px solid var(--border);
+      background: var(--panel-2);
+      display: grid;
+      gap: 8px;
+      line-height: 1.45;
+    }
+
+    .status.good { border-color: rgba(71, 209, 140, 0.45); }
+    .status.warn { border-color: rgba(255, 209, 102, 0.55); }
+    .status.bad { border-color: rgba(255, 107, 107, 0.55); }
+
+    .status strong { font-size: 1.05rem; }
+    .status p { margin: 0; color: var(--muted); }
+
+    .formula {
+      display: grid;
+      gap: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    code {
+      background: #071525;
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 2px 6px;
+    }
+
+    footer {
+      color: var(--subtle);
+      margin-top: 34px;
+      line-height: 1.55;
+      font-size: 0.92rem;
+    }
+
+    @media (max-width: 980px) {
+      .grid { grid-template-columns: 1fr; }
+      .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      main { width: min(100% - 20px, 1180px); padding-top: 28px; }
+      .cards { grid-template-columns: 1fr; }
+      .slot-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="eyebrow">Windows 365 Flex</div>
+      <h1>License capacity calculator</h1>
+      <p class="lead">
+        Model how Windows 365 Flex licenses are consumed by shared pools, Cloud Apps pools, and
+        dedicated Cloud PCs. This is designed to explain why a tenant may be at a shared pool limit
+        while still having dedicated machine slots available.
+      </p>
+    </header>
+
+    <section class="grid">
+      <aside class="panel">
+        <div class="panel-header">
+          <h2>Inputs</h2>
+        </div>
+        <div class="panel-body inputs">
+          <label>
+            <strong>Flex licenses purchased</strong>
+            <input id="licenses" type="number" min="0" step="1" value="5">
+            <span class="hint">Total Flex licenses for this CPU/RAM/storage size.</span>
+          </label>
+
+          <label>
+            <strong>Dedicated Cloud PCs</strong>
+            <input id="dedicated" type="number" min="0" step="1" value="4">
+            <span class="hint">Dedicated Flex machines already created or provisioning.</span>
+          </label>
+
+          <label>
+            <strong>Shared pool Cloud PCs</strong>
+            <input id="shared" type="number" min="0" step="1" value="2">
+            <span class="hint">Cloud PCs backing regular shared pools.</span>
+          </label>
+
+          <label>
+            <strong>Cloud Apps pool Cloud PCs</strong>
+            <input id="cloudApps" type="number" min="0" step="1" value="1">
+            <span class="hint">Cloud PCs backing Windows 365 Cloud Apps pools.</span>
+          </label>
+
+          <label>
+            <strong>Active Flex sessions now</strong>
+            <input id="active" type="number" min="0" step="1" value="0">
+            <span class="hint">Optional. Used only to show remaining concurrent sessions.</span>
+          </label>
+        </div>
+      </aside>
+
+      <section class="results">
+        <div class="cards">
+          <article class="card">
+            <div class="label">License units used</div>
+            <div id="usedUnits" class="value">0</div>
+            <div id="usedUnitsNote" class="note"></div>
+          </article>
+          <article class="card">
+            <div class="label">License units left</div>
+            <div id="unitsLeft" class="value">0</div>
+            <div class="note">Each remaining unit can become 1 shared pool PC or 3 dedicated PCs.</div>
+          </article>
+          <article class="card">
+            <div class="label">More shared pool PCs</div>
+            <div id="sharedLeft" class="value">0</div>
+            <div class="note">Shared pools consume one license unit per Cloud PC.</div>
+          </article>
+          <article class="card">
+            <div class="label">More dedicated PCs</div>
+            <div id="dedicatedLeft" class="value">0</div>
+            <div class="note">Dedicated capacity is counted in groups of 3 per license unit.</div>
+          </article>
+        </div>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2>Capacity summary</h2>
+          </div>
+          <div class="panel-body">
+            <div id="status" class="status"></div>
+            <div style="height: 18px"></div>
+            <div class="bar" aria-label="License unit usage">
+              <span id="sharedBar" class="shared"></span>
+              <span id="dedicatedBar" class="dedicated"></span>
+              <span id="freeBar" class="free"></span>
+              <span id="overBar" class="over"></span>
+            </div>
+            <div class="legend">
+              <span class="legend-item"><span class="swatch shared"></span>Shared and Cloud Apps units</span>
+              <span class="legend-item"><span class="swatch dedicated"></span>Dedicated units</span>
+              <span class="legend-item"><span class="swatch free"></span>Unused units</span>
+              <span class="legend-item"><span class="swatch over"></span>Over capacity</span>
+            </div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2>Dedicated slot visual</h2>
+          </div>
+          <div class="panel-body">
+            <div id="slots" class="slots"></div>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="panel-header">
+            <h2>How the math works</h2>
+          </div>
+          <div class="panel-body formula">
+            <div><code>shared units used = shared pool Cloud PCs + Cloud Apps pool Cloud PCs</code></div>
+            <div><code>dedicated units used = ceiling(dedicated Cloud PCs / 3)</code></div>
+            <div><code>total units used = shared units used + dedicated units used</code></div>
+            <div><code>more shared pool PCs = license units left</code></div>
+            <div><code>more dedicated PCs = remaining slots in current dedicated units + 3 per unused unit</code></div>
+            <div>
+              The concurrency limit is separate. It means that only the number of purchased Flex
+              licenses can have active connected sessions at the same time. It does not mean
+              multiple users can connect to one Cloud PC.
+            </div>
+          </div>
+        </article>
+      </section>
+    </section>
+
+    <footer>
+      This calculator is an explanatory model for Windows 365 Flex capacity planning. Always verify
+      final provisioning behavior in the Microsoft Intune or Windows 365 admin experience.
+    </footer>
+  </main>
+
+  <script>
+    const ids = ["licenses", "dedicated", "shared", "cloudApps", "active"];
+    const byId = (id) => document.getElementById(id);
+    const value = (id) => Math.max(0, Number.parseInt(byId(id).value || "0", 10));
+
+    function setValue(id, value, severity = "") {
+      const element = byId(id);
+      element.textContent = value;
+      element.className = `value ${severity}`.trim();
+    }
+
+    function calculate() {
+      const licenses = value("licenses");
+      const dedicated = value("dedicated");
+      const shared = value("shared");
+      const cloudApps = value("cloudApps");
+      const active = value("active");
+
+      const sharedUnits = shared + cloudApps;
+      const dedicatedUnits = Math.ceil(dedicated / 3);
+      const usedUnits = sharedUnits + dedicatedUnits;
+      const unitsLeft = Math.max(0, licenses - usedUnits);
+      const overUnits = Math.max(0, usedUnits - licenses);
+      const dedicatedSlotsLeftInUsedUnits = Math.max(0, dedicatedUnits * 3 - dedicated);
+      const moreDedicated = dedicatedSlotsLeftInUsedUnits + unitsLeft * 3;
+      const moreShared = unitsLeft;
+      const activeLeft = Math.max(0, licenses - active);
+
+      setValue("usedUnits", usedUnits, overUnits > 0 ? "red" : usedUnits === licenses ? "yellow" : "green");
+      setValue("unitsLeft", unitsLeft, unitsLeft === 0 ? "yellow" : "green");
+      setValue("sharedLeft", moreShared, moreShared === 0 ? "yellow" : "green");
+      setValue("dedicatedLeft", moreDedicated, moreDedicated === 0 ? "yellow" : "green");
+      byId("usedUnitsNote").textContent = `${sharedUnits} shared units + ${dedicatedUnits} dedicated units`;
+
+      const status = byId("status");
+      status.className = `status ${overUnits > 0 ? "bad" : unitsLeft === 0 ? "warn" : "good"}`;
+      status.innerHTML = `
+        <strong>${overUnits > 0 ? "Over capacity" : unitsLeft === 0 ? "At license-unit capacity" : "Capacity available"}</strong>
+        <p>${sharedUnits} license units are used by shared pools and Cloud Apps pools.</p>
+        <p>${dedicated} dedicated Cloud PCs use ${dedicatedUnits} license units.</p>
+        <p>${moreShared} more shared pool Cloud PCs can be created, or ${moreDedicated} more dedicated Cloud PCs can be created.</p>
+        <p>${activeLeft} more Flex Cloud PCs can have an active connected user right now.</p>
+      `;
+
+      const denominator = Math.max(licenses, usedUnits, 1);
+      byId("sharedBar").style.width = `${(sharedUnits / denominator) * 100}%`;
+      byId("dedicatedBar").style.width = `${(dedicatedUnits / denominator) * 100}%`;
+      byId("freeBar").style.width = `${(unitsLeft / denominator) * 100}%`;
+      byId("overBar").style.width = `${(overUnits / denominator) * 100}%`;
+
+      renderSlots(dedicated, dedicatedUnits, licenses, sharedUnits);
+    }
+
+    function renderSlots(dedicated, dedicatedUnits, licenses, sharedUnits) {
+      const slotContainer = byId("slots");
+      slotContainer.innerHTML = "";
+      const dedicatedCapacityUnits = Math.max(dedicatedUnits, Math.max(0, licenses - sharedUnits));
+      const rows = Math.max(1, dedicatedCapacityUnits);
+      let used = dedicated;
+
+      for (let i = 1; i <= rows; i++) {
+        const row = document.createElement("div");
+        row.className = "slot-row";
+        const label = document.createElement("div");
+        label.textContent = `Unit ${i}`;
+        const cells = document.createElement("div");
+        cells.className = "slot-cells";
+
+        for (let s = 1; s <= 3; s++) {
+          const cell = document.createElement("div");
+          cell.className = `slot ${used > 0 ? "used" : ""}`;
+          cell.textContent = used > 0 ? "PC" : "Open";
+          cells.appendChild(cell);
+          used -= 1;
+        }
+
+        row.appendChild(label);
+        row.appendChild(cells);
+        slotContainer.appendChild(row);
+      }
+    }
+
+    ids.forEach((id) => byId(id).addEventListener("input", calculate));
+    calculate();
+  </script>
+</body>
+</html>
