@@ -235,16 +235,59 @@
       gap: 12px;
     }
 
-    .slot-row {
+    .unit-grid {
       display: grid;
-      grid-template-columns: 96px 1fr;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
       gap: 12px;
-      align-items: center;
-      color: var(--muted);
-      font-size: 0.9rem;
     }
 
-    .slot-cells {
+    .unit-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: #071525;
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .unit-card.shared-unit {
+      border-color: rgba(99, 164, 255, 0.58);
+      background: rgba(99, 164, 255, 0.12);
+    }
+
+    .unit-card.free-unit {
+      opacity: 0.75;
+    }
+
+    .unit-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .unit-subtitle {
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.4;
+    }
+
+    .unit-badge {
+      border-radius: 999px;
+      padding: 4px 9px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+
+    .unit-badge.shared { color: #9cc5ff; border-color: rgba(99, 164, 255, 0.55); }
+    .unit-badge.dedicated { color: var(--green); border-color: rgba(71, 209, 140, 0.55); }
+    .unit-badge.free { color: var(--subtle); }
+
+    .unit-slots {
       display: grid;
       grid-template-columns: repeat(3, minmax(36px, 1fr));
       gap: 8px;
@@ -265,6 +308,19 @@
       background: rgba(71, 209, 140, 0.18);
       border-color: rgba(71, 209, 140, 0.55);
       color: var(--green);
+    }
+
+    .shared-pc {
+      min-height: 88px;
+      border-radius: 14px;
+      border: 1px solid rgba(99, 164, 255, 0.55);
+      background: rgba(99, 164, 255, 0.16);
+      display: grid;
+      place-items: center;
+      color: #cfe2ff;
+      text-align: center;
+      font-weight: 800;
+      line-height: 1.25;
     }
 
     .status {
@@ -314,7 +370,7 @@
     @media (max-width: 560px) {
       main { width: min(100% - 20px, 1180px); padding-top: 28px; }
       .cards { grid-template-columns: 1fr; }
-      .slot-row { grid-template-columns: 1fr; }
+      .unit-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -360,11 +416,6 @@
             <span class="hint">Cloud PCs backing Windows 365 Cloud Apps pools.</span>
           </label>
 
-          <label>
-            <strong>Active Flex sessions now</strong>
-            <input id="active" type="number" min="0" step="1" value="0">
-            <span class="hint">Optional. Used only to show remaining concurrent sessions.</span>
-          </label>
         </div>
       </aside>
 
@@ -416,9 +467,12 @@
 
         <article class="panel">
           <div class="panel-header">
-            <h2>Dedicated slot visual</h2>
+            <h2>License unit visual</h2>
           </div>
           <div class="panel-body">
+            <p class="hint" style="margin-top: 0">
+              Each license unit is either one shared pool Cloud PC or up to three dedicated Cloud PCs.
+            </p>
             <div id="slots" class="slots"></div>
           </div>
         </article>
@@ -433,11 +487,6 @@
             <div><code>total units used = shared units used + dedicated units used</code></div>
             <div><code>more shared pool PCs = license units left</code></div>
             <div><code>more dedicated PCs = remaining slots in current dedicated units + 3 per unused unit</code></div>
-            <div>
-              The concurrency limit is separate. It means that only the number of purchased Flex
-              licenses can have active connected sessions at the same time. It does not mean
-              multiple users can connect to one Cloud PC.
-            </div>
           </div>
         </article>
       </section>
@@ -450,7 +499,7 @@
   </main>
 
   <script>
-    const ids = ["licenses", "dedicated", "shared", "cloudApps", "active"];
+    const ids = ["licenses", "dedicated", "shared", "cloudApps"];
     const byId = (id) => document.getElementById(id);
     const value = (id) => Math.max(0, Number.parseInt(byId(id).value || "0", 10));
 
@@ -465,8 +514,6 @@
       const dedicated = value("dedicated");
       const shared = value("shared");
       const cloudApps = value("cloudApps");
-      const active = value("active");
-
       const sharedUnits = shared + cloudApps;
       const dedicatedUnits = Math.ceil(dedicated / 3);
       const usedUnits = sharedUnits + dedicatedUnits;
@@ -475,7 +522,6 @@
       const dedicatedSlotsLeftInUsedUnits = Math.max(0, dedicatedUnits * 3 - dedicated);
       const moreDedicated = dedicatedSlotsLeftInUsedUnits + unitsLeft * 3;
       const moreShared = unitsLeft;
-      const activeLeft = Math.max(0, licenses - active);
 
       setValue("usedUnits", usedUnits, overUnits > 0 ? "red" : usedUnits === licenses ? "yellow" : "green");
       setValue("unitsLeft", unitsLeft, unitsLeft === 0 ? "yellow" : "green");
@@ -490,7 +536,6 @@
         <p>${sharedUnits} license units are used by shared pools and Cloud Apps pools.</p>
         <p>${dedicated} dedicated Cloud PCs use ${dedicatedUnits} license units.</p>
         <p>${moreShared} more shared pool Cloud PCs can be created, or ${moreDedicated} more dedicated Cloud PCs can be created.</p>
-        <p>${activeLeft} more Flex Cloud PCs can have an active connected user right now.</p>
       `;
 
       const denominator = Math.max(licenses, usedUnits, 1);
@@ -499,36 +544,82 @@
       byId("freeBar").style.width = `${(unitsLeft / denominator) * 100}%`;
       byId("overBar").style.width = `${(overUnits / denominator) * 100}%`;
 
-      renderSlots(dedicated, dedicatedUnits, licenses, sharedUnits);
+      renderUnits(dedicated, shared, cloudApps, licenses, sharedUnits, dedicatedUnits);
     }
 
-    function renderSlots(dedicated, dedicatedUnits, licenses, sharedUnits) {
+    function renderUnits(dedicated, shared, cloudApps, licenses, sharedUnits, dedicatedUnits) {
       const slotContainer = byId("slots");
       slotContainer.innerHTML = "";
-      const dedicatedCapacityUnits = Math.max(dedicatedUnits, Math.max(0, licenses - sharedUnits));
-      const rows = Math.max(1, dedicatedCapacityUnits);
-      let used = dedicated;
+      const grid = document.createElement("div");
+      grid.className = "unit-grid";
+      let sharedRemaining = shared;
+      let cloudAppsRemaining = cloudApps;
+      let dedicatedRemaining = dedicated;
+      const unitsToRender = Math.max(licenses, sharedUnits + dedicatedUnits, 1);
 
-      for (let i = 1; i <= rows; i++) {
-        const row = document.createElement("div");
-        row.className = "slot-row";
-        const label = document.createElement("div");
-        label.textContent = `Unit ${i}`;
-        const cells = document.createElement("div");
-        cells.className = "slot-cells";
+      for (let i = 1; i <= unitsToRender; i++) {
+        const unit = document.createElement("div");
+        const title = document.createElement("div");
+        const badge = document.createElement("span");
+        const subtitle = document.createElement("div");
+        title.className = "unit-title";
+        subtitle.className = "unit-subtitle";
+        title.append(`License ${i}`);
+        title.appendChild(badge);
 
-        for (let s = 1; s <= 3; s++) {
-          const cell = document.createElement("div");
-          cell.className = `slot ${used > 0 ? "used" : ""}`;
-          cell.textContent = used > 0 ? "PC" : "Open";
-          cells.appendChild(cell);
-          used -= 1;
+        if (cloudAppsRemaining > 0 || sharedRemaining > 0) {
+          const isCloudApps = cloudAppsRemaining > 0;
+          if (isCloudApps) {
+            cloudAppsRemaining -= 1;
+          } else {
+            sharedRemaining -= 1;
+          }
+
+          unit.className = "unit-card shared-unit";
+          badge.className = "unit-badge shared";
+          badge.textContent = "1 shared";
+          subtitle.textContent = isCloudApps
+            ? "This license unit is consumed by one Cloud Apps pool Cloud PC."
+            : "This license unit is consumed by one shared pool Cloud PC.";
+          const sharedBox = document.createElement("div");
+          sharedBox.className = "shared-pc";
+          sharedBox.innerHTML = isCloudApps ? "Cloud Apps<br>pool PC" : "Shared<br>pool PC";
+          unit.append(title, sharedBox, subtitle);
+        } else if (dedicatedRemaining > 0) {
+          unit.className = "unit-card";
+          badge.className = "unit-badge dedicated";
+          badge.textContent = "up to 3 dedicated";
+          subtitle.textContent = "This license unit can cover up to three dedicated Cloud PCs.";
+          const cells = document.createElement("div");
+          cells.className = "unit-slots";
+          for (let s = 1; s <= 3; s++) {
+            const cell = document.createElement("div");
+            cell.className = `slot ${dedicatedRemaining > 0 ? "used" : ""}`;
+            cell.textContent = dedicatedRemaining > 0 ? "PC" : "Open";
+            cells.appendChild(cell);
+            dedicatedRemaining -= 1;
+          }
+          unit.append(title, cells, subtitle);
+        } else {
+          unit.className = "unit-card free-unit";
+          badge.className = "unit-badge free";
+          badge.textContent = "unused";
+          subtitle.textContent = "This license unit is still available.";
+          const cells = document.createElement("div");
+          cells.className = "unit-slots";
+          for (let s = 1; s <= 3; s++) {
+            const cell = document.createElement("div");
+            cell.className = "slot";
+            cell.textContent = "Open";
+            cells.appendChild(cell);
+          }
+          unit.append(title, cells, subtitle);
         }
 
-        row.appendChild(label);
-        row.appendChild(cells);
-        slotContainer.appendChild(row);
+        grid.appendChild(unit);
       }
+
+      slotContainer.appendChild(grid);
     }
 
     ids.forEach((id) => byId(id).addEventListener("input", calculate));

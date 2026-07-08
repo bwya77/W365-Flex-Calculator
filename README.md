@@ -10,7 +10,7 @@ A static calculator that explains Windows 365 Flex license-unit capacity.
 - How many shared pool or Cloud Apps Cloud PCs can still be created?
 - How many dedicated Flex Cloud PCs can still be created?
 - How does the 3 dedicated Cloud PCs per license rule work?
-- How is the active session limit different from provisioning capacity?
+- Which license units are consumed by shared pools vs dedicated Cloud PCs?
 
 ## Flex model used
 
@@ -28,13 +28,7 @@ total units used = shared units used + dedicated units used
 license units left = purchased licenses - total units used
 ```
 
-Concurrency is separate:
-
-```text
-maximum active sessions = purchased Flex licenses
-```
-
-That means 5 Flex licenses allow at most 5 Flex Cloud PCs to have connected users at the same time. It does not mean multiple users can connect to a single Cloud PC.
+The visual view shows each license unit as either one shared pool Cloud PC or three dedicated Cloud PC slots.
 
 ## Local use
 
