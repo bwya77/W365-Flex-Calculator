@@ -277,14 +277,11 @@
     }
 
     .answer {
-      border-radius: 22px;
-      padding: 24px;
-      box-shadow: var(--shadow);
+      border-radius: 12px;
+      padding: 12px 14px;
       border: 1px solid var(--border);
-      border-left: 6px solid var(--border);
+      border-left: 4px solid var(--border);
       background: var(--surface);
-      display: grid;
-      gap: 14px;
     }
 
     .answer.good { border-left-color: var(--green); }
@@ -297,15 +294,33 @@
 
     .answer h2 {
       margin: 0;
-      font-size: clamp(1.55rem, 3vw, 2.35rem);
-      letter-spacing: -0.04em;
+      font-size: 0.96rem;
+      letter-spacing: 0;
     }
 
     .answer p {
-      margin: 0;
+      margin: 10px 0 0;
       max-width: 760px;
       line-height: 1.55;
       color: var(--muted);
+    }
+
+    .answer summary {
+      cursor: pointer;
+      list-style: none;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .answer summary::-webkit-details-marker { display: none; }
+
+    .answer summary::after {
+      content: "Details";
+      color: var(--subtle);
+      font-size: 0.82rem;
+      font-weight: 600;
     }
 
     .metrics {
@@ -533,16 +548,15 @@
 
           <div class="button-row">
             <button class="secondary-button" id="clear" type="button">Clear environment</button>
-            <a class="coffee-button" href="https://buymeacoffee.com/bwya77" target="_blank" rel="noopener noreferrer">Buy me a coffee</a>
           </div>
         </div>
       </aside>
 
       <section class="results">
-        <section id="answer" class="answer">
-          <h2 id="answerTitle"></h2>
+        <details id="answer" class="answer">
+          <summary><h2 id="answerTitle"></h2></summary>
           <p id="answerText"></p>
-        </section>
+        </details>
 
         <section class="metrics">
           <article class="metric">
@@ -629,9 +643,11 @@
       const answer = byId("answer");
       const title = byId("answerTitle");
       const text = byId("answerText");
+      const wasOpen = answer.open;
 
       if (model.overUnits > 0) {
         answer.className = "answer bad";
+        answer.open = wasOpen;
         title.textContent = `This is ${model.overUnits} license unit${model.overUnits === 1 ? "" : "s"} over capacity.`;
         text.textContent = `Reduce shared pool PCs, reduce dedicated PCs, or add more Flex licenses for this size.`;
         return;
@@ -639,12 +655,14 @@
 
       if (model.unitsLeft === 0) {
         answer.className = "answer warn";
+        answer.open = wasOpen;
         title.textContent = "You are at shared pool capacity.";
         text.textContent = `You cannot create another shared pool Cloud PC. You can still create ${model.moreDedicated} dedicated Cloud PC${model.moreDedicated === 1 ? "" : "s"} because your current dedicated license unit is not full.`;
         return;
       }
 
       answer.className = "answer good";
+      answer.open = wasOpen;
       title.textContent = "You still have Flex capacity.";
       text.textContent = `You can create ${model.moreShared} more shared pool Cloud PC${model.moreShared === 1 ? "" : "s"} or ${model.moreDedicated} more dedicated Cloud PC${model.moreDedicated === 1 ? "" : "s"}.`;
     }
