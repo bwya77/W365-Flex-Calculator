@@ -6,27 +6,25 @@
   <title>Windows 365 Flex Calculator</title>
   <style>
     :root {
-      color-scheme: light;
-      --ms-blue: #0078d4;
-      --ms-blue-dark: #005a9e;
-      --ms-blue-soft: #e5f1fb;
-      --bg: #f5f7fb;
-      --surface: #ffffff;
-      --surface-alt: #fafbfd;
-      --border: #d0d7de;
-      --border-strong: #aeb8c2;
-      --text: #1f1f1f;
-      --muted: #5f6b7a;
-      --subtle: #8a94a3;
-      --green: #107c10;
-      --green-soft: #e7f5e8;
-      --yellow: #986f0b;
-      --yellow-soft: #fff4ce;
-      --red: #a4262c;
-      --red-soft: #fde7e9;
-      --purple: #5c2d91;
-      --purple-soft: #f3ecfb;
-      --shadow: 0 14px 40px rgba(0, 0, 0, 0.10);
+      color-scheme: dark;
+      --ms-blue: #58a6ff;
+      --ms-blue-dark: #79c0ff;
+      --ms-blue-soft: rgba(88, 166, 255, 0.14);
+      --bg: #0d1117;
+      --surface: #161b22;
+      --surface-alt: #0d1117;
+      --border: #30363d;
+      --border-strong: #3d444d;
+      --text: #f0f6fc;
+      --muted: #c9d1d9;
+      --subtle: #8b949e;
+      --green: #3fb950;
+      --green-soft: rgba(63, 185, 80, 0.14);
+      --yellow: #d29922;
+      --yellow-soft: rgba(210, 153, 34, 0.16);
+      --red: #f85149;
+      --red-soft: rgba(248, 81, 73, 0.14);
+      --shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
       font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
@@ -37,8 +35,8 @@
       min-height: 100vh;
       color: var(--text);
       background:
-        radial-gradient(circle at top left, rgba(0, 120, 212, 0.16), transparent 34rem),
-        linear-gradient(180deg, #ffffff 0, var(--bg) 360px);
+        radial-gradient(circle at top left, rgba(88, 166, 255, 0.16), transparent 34rem),
+        linear-gradient(180deg, #010409 0, var(--bg) 360px);
     }
 
     main {
@@ -137,7 +135,7 @@
       min-width: 0;
       border: 1px solid var(--border-strong);
       border-radius: 8px;
-      background: #ffffff;
+      background: #0d1117;
       color: var(--text);
       padding: 10px 12px;
       font: inherit;
@@ -152,7 +150,7 @@
 
     button {
       border: 1px solid var(--border-strong);
-      background: #ffffff;
+      background: #21262d;
       color: var(--text);
       border-radius: 8px;
       font: inherit;
@@ -198,9 +196,9 @@
       gap: 14px;
     }
 
-    .answer.good { border-color: rgba(16, 124, 16, 0.35); background: linear-gradient(180deg, #fff, var(--green-soft)); }
-    .answer.warn { border-color: rgba(152, 111, 11, 0.38); background: linear-gradient(180deg, #fff, var(--yellow-soft)); }
-    .answer.bad { border-color: rgba(164, 38, 44, 0.35); background: linear-gradient(180deg, #fff, var(--red-soft)); }
+    .answer.good { border-color: rgba(63, 185, 80, 0.45); background: linear-gradient(180deg, var(--surface), var(--green-soft)); }
+    .answer.warn { border-color: rgba(210, 153, 34, 0.50); background: linear-gradient(180deg, var(--surface), var(--yellow-soft)); }
+    .answer.bad { border-color: rgba(248, 81, 73, 0.48); background: linear-gradient(180deg, var(--surface), var(--red-soft)); }
 
     .answer h2 {
       margin: 0;
@@ -254,30 +252,6 @@
     .red { color: var(--red); }
     .blue { color: var(--ms-blue); }
 
-    .explainer {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .explain-card {
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      background: var(--surface);
-      line-height: 1.45;
-    }
-
-    .explain-card strong {
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    .explain-card span {
-      color: var(--muted);
-      font-size: 0.92rem;
-    }
-
     .unit-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -299,7 +273,7 @@
     }
 
     .unit.free {
-      background: #f7f8fa;
+      background: #0d1117;
       color: var(--muted);
     }
 
@@ -321,7 +295,7 @@
       white-space: nowrap;
     }
 
-    .badge.shared { color: var(--ms-blue); border-color: rgba(0, 120, 212, 0.35); background: #fff; }
+    .badge.shared { color: #79c0ff; border-color: rgba(88, 166, 255, 0.45); background: rgba(88, 166, 255, 0.10); }
     .badge.dedicated { color: var(--green); border-color: rgba(16, 124, 16, 0.35); background: var(--green-soft); }
 
     .unit-description {
@@ -357,28 +331,13 @@
       place-items: center;
       font-weight: 800;
       color: var(--subtle);
-      background: #f7f8fa;
+      background: #0d1117;
     }
 
     .slot.used {
       color: var(--green);
       background: var(--green-soft);
       border-color: rgba(16, 124, 16, 0.35);
-    }
-
-    .formula {
-      display: grid;
-      gap: 10px;
-      color: var(--muted);
-      line-height: 1.5;
-    }
-
-    code {
-      background: #f7f8fa;
-      border: 1px solid var(--border);
-      border-radius: 7px;
-      color: var(--text);
-      padding: 2px 6px;
     }
 
     footer {
@@ -391,7 +350,6 @@
     @media (max-width: 980px) {
       .layout { grid-template-columns: 1fr; }
       .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .explainer { grid-template-columns: 1fr; }
     }
 
     @media (max-width: 560px) {
@@ -457,7 +415,6 @@
             <span class="hint">Cloud PCs backing Windows 365 Cloud Apps pools.</span>
           </label>
 
-          <button class="primary-button" id="example">Load example: 5 licenses, 4 dedicated, 3 shared</button>
         </div>
       </aside>
 
@@ -490,21 +447,6 @@
           </article>
         </section>
 
-        <section class="explainer">
-          <div class="explain-card">
-            <strong>Shared is simple</strong>
-            <span>One shared pool or Cloud Apps Cloud PC uses one full license unit.</span>
-          </div>
-          <div class="explain-card">
-            <strong>Dedicated is grouped</strong>
-            <span>One license unit can hold up to three dedicated Cloud PCs.</span>
-          </div>
-          <div class="explain-card">
-            <strong>Sessions are separate</strong>
-            <span>The license count is also the maximum number of Flex Cloud PCs that can have connected users at the same time.</span>
-          </div>
-        </section>
-
         <section class="panel">
           <div class="panel-header">
             <h2>License unit visual</h2>
@@ -514,18 +456,6 @@
           </div>
         </section>
 
-        <section class="panel">
-          <div class="panel-header">
-            <h2>The math</h2>
-          </div>
-          <div class="panel-body formula">
-            <div><code>shared units used = shared pool Cloud PCs + Cloud Apps pool Cloud PCs</code></div>
-            <div><code>dedicated units used = ceiling(dedicated Cloud PCs / 3)</code></div>
-            <div><code>license units used = shared units used + dedicated units used</code></div>
-            <div><code>more shared pool PCs = license units left</code></div>
-            <div><code>more dedicated PCs = open dedicated slots + 3 per unused license unit</code></div>
-          </div>
-        </section>
       </section>
     </section>
 
@@ -681,14 +611,6 @@
         calculate();
       });
     });
-    byId("example").addEventListener("click", () => {
-      byId("licenses").value = 5;
-      byId("dedicated").value = 4;
-      byId("shared").value = 2;
-      byId("cloudApps").value = 1;
-      calculate();
-    });
-
     calculate();
   </script>
 </body>
