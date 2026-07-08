@@ -176,6 +176,38 @@
       border-color: var(--ms-blue-dark);
     }
 
+    .button-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      padding-top: 4px;
+    }
+
+    .secondary-button,
+    .coffee-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      text-decoration: none;
+      font-weight: 700;
+      color: var(--text);
+      background: #21262d;
+    }
+
+    .secondary-button:hover,
+    .coffee-button:hover {
+      background: var(--ms-blue-soft);
+      border-color: var(--ms-blue);
+    }
+
+    .coffee-button {
+      color: #ffdd00;
+      border-color: rgba(255, 221, 0, 0.35);
+    }
+
     .hint {
       color: var(--subtle);
       font-size: 0.82rem;
@@ -420,6 +452,10 @@
             <span class="hint">Cloud PCs backing Windows 365 Cloud Apps pools.</span>
           </label>
 
+          <div class="button-row">
+            <button class="secondary-button" id="clear" type="button">Clear environment</button>
+            <a class="coffee-button" href="https://buymeacoffee.com/bwya77" target="_blank" rel="noopener noreferrer">Buy me a coffee</a>
+          </div>
         </div>
       </aside>
 
@@ -615,6 +651,10 @@
         byId(id).value = Math.max(0, readNumber(id) + delta);
         calculate();
       });
+    });
+    byId("clear").addEventListener("click", () => {
+      inputIds.forEach((id) => byId(id).value = 0);
+      calculate();
     });
     calculate();
   </script>
