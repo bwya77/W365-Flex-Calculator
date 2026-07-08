@@ -10,7 +10,6 @@ A static calculator that explains Windows 365 Flex license-unit capacity.
 - How many shared pool or Cloud Apps Cloud PCs can still be created?
 - How many dedicated Flex Cloud PCs can still be created?
 - How many Flex licenses are needed when planning backward from users and peak demand?
-- How many Flex licenses are needed across multiple regions and Cloud PC sizes?
 - How does the 3 dedicated Cloud PCs per license rule work?
 - Which license units are consumed by shared pools vs dedicated Cloud PCs?
 
@@ -52,12 +51,6 @@ The calculator recommends the greater of:
 capacity licenses = ceiling(dedicated users / 3) + shared users active at peak + Cloud Apps users active at peak
 concurrency licenses = dedicated users active at peak + shared users active at peak + Cloud Apps users active at peak
 ```
-
-## Advanced planning
-
-Use **Advanced plan** when a customer has multiple deployment groups, regions, or Cloud PC sizes. Add one row per group, for example Europe 4vCPU/16GB/128GB and US Central 2vCPU/8GB/128GB.
-
-The calculator groups rows by Cloud PC size because Flex licenses are size-specific. It shows the licenses needed per size, then totals the plan across all rows.
 
 ## Local use
 
