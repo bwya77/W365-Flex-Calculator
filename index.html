@@ -421,6 +421,10 @@
       border-color: rgba(163, 113, 247, 0.45);
     }
 
+    .unit.dedicated {
+      border-color: rgba(63, 185, 80, 0.42);
+    }
+
     .unit.free {
       background: #0d1117;
       color: var(--muted);
@@ -480,13 +484,25 @@
       margin-bottom: 14px;
     }
 
-    .legend-item {
+    .legend-filter {
       display: inline-flex;
       align-items: center;
       gap: 8px;
+      min-height: 34px;
+      padding: 0 10px;
+      border-radius: 999px;
       color: var(--muted);
+      background: #0d1117;
+      border: 1px solid var(--border);
       font-size: 0.84rem;
       font-weight: 700;
+    }
+
+    .legend-filter:hover,
+    .legend-filter.active {
+      color: var(--text);
+      background: var(--ms-blue-soft);
+      border-color: rgba(88, 166, 255, 0.45);
     }
 
     .legend-dot {
@@ -707,10 +723,11 @@
             <h2>License unit visual</h2>
           </div>
           <div class="panel-body">
-            <div class="legend" aria-label="Visual color key">
-              <span class="legend-item"><span class="legend-dot" aria-hidden="true"></span>Shared pool</span>
-              <span class="legend-item"><span class="legend-dot cloud-apps" aria-hidden="true"></span>Cloud Apps</span>
-              <span class="legend-item"><span class="legend-dot dedicated" aria-hidden="true"></span>Dedicated</span>
+            <div class="legend" aria-label="Filter license unit visual">
+              <button class="legend-filter active" type="button" data-visual-filter="all">All</button>
+              <button class="legend-filter" type="button" data-visual-filter="shared"><span class="legend-dot" aria-hidden="true"></span>Shared pool</button>
+              <button class="legend-filter" type="button" data-visual-filter="cloud-apps"><span class="legend-dot cloud-apps" aria-hidden="true"></span>Cloud Apps</button>
+              <button class="legend-filter" type="button" data-visual-filter="dedicated"><span class="legend-dot dedicated" aria-hidden="true"></span>Dedicated</button>
             </div>
             <div id="units" class="unit-grid"></div>
           </div>
@@ -734,6 +751,7 @@
     const planningInputIds = ["planDedicatedUsers", "planDedicatedPeak", "planSharedUsers", "planSharedPeak"];
     const inputIds = [...currentInputIds, ...planningInputIds];
     let currentMode = "current";
+    let visualFilter = "all";
     const byId = (id) => document.getElementById(id);
     const readNumber = (id) => Math.max(0, Number.parseInt(byId(id).value || "0", 10));
 
@@ -894,13 +912,15 @@
       let dedicatedLeft = model.dedicated;
       const unitsToRender = Math.max(model.licenses, model.usedUnits, 1);
       const maxVisibleUnits = 48;
-      const visibleUnits = Math.min(unitsToRender, maxVisibleUnits);
+      let visibleUnits = 0;
+      let matchingUnits = 0;
 
-      for (let i = 1; i <= visibleUnits; i++) {
+      for (let i = 1; i <= unitsToRender; i++) {
         const unit = document.createElement("article");
         const header = document.createElement("div");
         const badge = document.createElement("span");
         const desc = document.createElement("div");
+        let type = "free";
         header.className = "unit-header";
         desc.className = "unit-description";
         header.append(`License ${i}`);
@@ -914,6 +934,7 @@
             sharedLeft -= 1;
           }
 
+          type = isCloudApps ? "cloud-apps" : "shared";
           unit.className = isCloudApps ? "unit cloud-apps" : "unit shared";
           badge.className = isCloudApps ? "badge cloud-apps" : "badge shared";
           badge.textContent = isCloudApps ? "Cloud Apps" : "shared";
@@ -926,7 +947,8 @@
           sharedBox.innerHTML = isCloudApps ? "Cloud Apps<br>pool PC" : "Shared<br>pool PC";
           unit.append(header, sharedBox, desc);
         } else if (dedicatedLeft > 0) {
-          unit.className = "unit";
+          type = "dedicated";
+          unit.className = "unit dedicated";
           badge.className = "badge dedicated";
           badge.textContent = "3 dedicated";
           desc.textContent = "This license unit can hold up to three dedicated Cloud PCs.";
@@ -960,11 +982,27 @@
           unit.append(header, slots, desc);
         }
 
-        container.appendChild(unit);
+        if (visualFilter === "all" || visualFilter === type) {
+          matchingUnits += 1;
+          if (visibleUnits < maxVisibleUnits) {
+            container.appendChild(unit);
+            visibleUnits += 1;
+          }
+        }
       }
 
-      if (unitsToRender > maxVisibleUnits) {
-        const hiddenUnits = unitsToRender - maxVisibleUnits;
+      if (matchingUnits === 0) {
+        const empty = document.createElement("article");
+        const desc = document.createElement("div");
+        empty.className = "unit free";
+        desc.className = "unit-description";
+        desc.textContent = "No license units match this filter.";
+        empty.append(desc);
+        container.appendChild(empty);
+      }
+
+      if (matchingUnits > maxVisibleUnits) {
+        const hiddenUnits = matchingUnits - maxVisibleUnits;
         const summary = document.createElement("article");
         const header = document.createElement("div");
         const desc = document.createElement("div");
@@ -976,7 +1014,7 @@
         badge.textContent = "summary";
         header.append(`${hiddenUnits} more license unit${hiddenUnits === 1 ? "" : "s"}`);
         header.appendChild(badge);
-        desc.textContent = "The visual is capped so large plans stay easy to scan.";
+        desc.textContent = "The visual is capped so large plans stay easy to scan. Use the filters to narrow the view.";
         summary.append(header, desc);
         container.appendChild(summary);
       }
@@ -993,6 +1031,15 @@
         });
         byId("currentFields").classList.toggle("active", currentMode === "current");
         byId("planningFields").classList.toggle("active", currentMode === "planning");
+        calculate();
+      });
+    });
+    document.querySelectorAll("[data-visual-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        visualFilter = button.dataset.visualFilter;
+        document.querySelectorAll("[data-visual-filter]").forEach((filter) => {
+          filter.classList.toggle("active", filter.dataset.visualFilter === visualFilter);
+        });
         calculate();
       });
     });
