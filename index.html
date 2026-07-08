@@ -173,7 +173,7 @@
 
     .mode-tabs {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
       padding: 4px;
       border: 1px solid var(--border);
@@ -222,7 +222,8 @@
       gap: 8px;
     }
 
-    input {
+    input,
+    select {
       width: 100%;
       min-width: 0;
       border: 1px solid var(--border-strong);
@@ -232,10 +233,18 @@
       padding: 10px 12px;
       font: inherit;
       outline: none;
+    }
+
+    input {
       text-align: center;
     }
 
-    input:focus {
+    select {
+      text-align: left;
+    }
+
+    input:focus,
+    select:focus {
       border-color: var(--ms-blue);
       box-shadow: 0 0 0 3px rgba(0, 120, 212, 0.18);
     }
@@ -303,6 +312,86 @@
     .hint {
       color: var(--subtle);
       font-size: 0.82rem;
+    }
+
+    .advanced-actions {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .advanced-group {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: #0d1117;
+      overflow: hidden;
+    }
+
+    .advanced-group-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text);
+      font-weight: 800;
+    }
+
+    .advanced-remove {
+      min-height: 32px;
+      padding: 0 10px;
+      color: var(--muted);
+    }
+
+    .advanced-fields {
+      display: grid;
+      gap: 12px;
+      padding: 14px;
+    }
+
+    .advanced-two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .advanced-number-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .breakdown-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    .breakdown-table th,
+    .breakdown-table td {
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .breakdown-table th:first-child,
+    .breakdown-table td:first-child,
+    .breakdown-table th:nth-child(2),
+    .breakdown-table td:nth-child(2) {
+      text-align: left;
+    }
+
+    .breakdown-table th {
+      color: var(--text);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .breakdown-table tr:last-child td {
+      border-bottom: 0;
     }
 
     .results {
@@ -561,6 +650,9 @@
     @media (max-width: 560px) {
       main { width: min(100% - 20px, 1200px); padding-top: 26px; }
       .metrics { grid-template-columns: 1fr; }
+      .mode-tabs,
+      .advanced-two,
+      .advanced-number-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -598,6 +690,7 @@
           <div class="mode-tabs" role="tablist" aria-label="Calculator mode">
             <button class="mode-tab active" type="button" data-mode="current" role="tab" aria-selected="true">Check current</button>
             <button class="mode-tab" type="button" data-mode="planning" role="tab" aria-selected="false">Plan new</button>
+            <button class="mode-tab" type="button" data-mode="advanced" role="tab" aria-selected="false">Advanced plan</button>
           </div>
 
           <div id="currentFields" class="mode-fields active">
@@ -694,6 +787,14 @@
             </label>
           </div>
 
+          <div id="advancedFields" class="mode-fields">
+            <span class="hint">Add one row per deployment group. Licenses are calculated per Cloud PC size, then totaled.</span>
+            <div id="advancedGroups" class="inputs"></div>
+            <div class="advanced-actions">
+              <button class="secondary-button" id="addAdvancedGroup" type="button">Add deployment group</button>
+            </div>
+          </div>
+
           <div class="button-row">
             <button class="secondary-button" id="clear" type="button">Clear environment</button>
           </div>
@@ -734,6 +835,28 @@
           </article>
         </section>
 
+        <section id="advancedBreakdownPanel" class="panel" hidden>
+          <div class="panel-header">
+            <h2>Advanced plan breakdown</h2>
+          </div>
+          <div class="panel-body">
+            <table class="breakdown-table">
+              <thead>
+                <tr>
+                  <th>Size</th>
+                  <th>Regions</th>
+                  <th>Dedicated</th>
+                  <th>Shared</th>
+                  <th>Cloud Apps</th>
+                  <th>Peak</th>
+                  <th>Licenses</th>
+                </tr>
+              </thead>
+              <tbody id="advancedBreakdown"></tbody>
+            </table>
+          </div>
+        </section>
+
         <section class="panel">
           <div class="panel-header">
             <h2>License unit visual</h2>
@@ -768,8 +891,18 @@
     const inputIds = [...currentInputIds, ...planningInputIds];
     let currentMode = "current";
     let visualFilter = "all";
+    let advancedGroupCounter = 0;
     const byId = (id) => document.getElementById(id);
     const readNumber = (id) => Math.max(0, Number.parseInt(byId(id).value || "0", 10));
+    const readFieldNumber = (element) => Math.max(0, Number.parseInt(element.value || "0", 10));
+    const sizeOptions = [
+      "2vCPU/8GB/128GB",
+      "4vCPU/16GB/128GB",
+      "4vCPU/16GB/256GB",
+      "8vCPU/32GB/128GB",
+      "8vCPU/32GB/256GB",
+      "16vCPU/64GB/512GB"
+    ];
 
     function setMetric(id, value, color = "") {
       const element = byId(id);
@@ -793,6 +926,11 @@
     function calculate() {
       if (currentMode === "planning") {
         calculatePlanning();
+        return;
+      }
+
+      if (currentMode === "advanced") {
+        calculateAdvancedPlanning();
         return;
       }
 
@@ -826,6 +964,7 @@
 
       renderAnswer({ licenses, dedicated, shared, cloudApps, sharedUnits, dedicatedUnits, usedUnits, unitsLeft, overUnits, moreDedicated, moreShared });
       renderUnits({ licenses, dedicated, shared, cloudApps, sharedUnits, dedicatedUnits, usedUnits });
+      byId("advancedBreakdownPanel").hidden = true;
     }
 
     function calculatePlanning() {
@@ -883,6 +1022,80 @@
         dedicatedUnits,
         usedUnits: capacityLicenses
       });
+      byId("advancedBreakdownPanel").hidden = true;
+    }
+
+    function calculateAdvancedPlanning() {
+      const groups = readAdvancedGroups();
+      const bySize = new Map();
+
+      for (const group of groups) {
+        const existing = bySize.get(group.size) ?? {
+          size: group.size,
+          regions: new Set(),
+          dedicatedUsers: 0,
+          dedicatedPeak: 0,
+          sharedPeak: 0,
+          cloudAppsPeak: 0
+        };
+        if (group.region) {
+          existing.regions.add(group.region);
+        }
+        existing.dedicatedUsers += group.dedicatedUsers;
+        existing.dedicatedPeak += group.dedicatedPeak;
+        existing.sharedPeak += group.sharedPeak;
+        existing.cloudAppsPeak += group.cloudAppsPeak;
+        bySize.set(group.size, existing);
+      }
+
+      const sizeRows = [...bySize.values()].map(row => {
+        const dedicatedUnits = Math.ceil(row.dedicatedUsers / 3);
+        const capacityLicenses = dedicatedUnits + row.sharedPeak + row.cloudAppsPeak;
+        const peakSessions = row.dedicatedPeak + row.sharedPeak + row.cloudAppsPeak;
+        const recommendedLicenses = Math.max(capacityLicenses, peakSessions);
+        return {
+          ...row,
+          dedicatedUnits,
+          capacityLicenses,
+          peakSessions,
+          recommendedLicenses
+        };
+      }).sort((a, b) => a.size.localeCompare(b.size));
+
+      const totalLicenses = sizeRows.reduce((sum, row) => sum + row.recommendedLicenses, 0);
+      const totalCapacityLicenses = sizeRows.reduce((sum, row) => sum + row.capacityLicenses, 0);
+      const totalPeakSessions = sizeRows.reduce((sum, row) => sum + row.peakSessions, 0);
+      const totalDedicatedUsers = sizeRows.reduce((sum, row) => sum + row.dedicatedUsers, 0);
+      const totalSharedPeak = sizeRows.reduce((sum, row) => sum + row.sharedPeak, 0);
+      const totalCloudAppsPeak = sizeRows.reduce((sum, row) => sum + row.cloudAppsPeak, 0);
+      const totalDedicatedUnits = sizeRows.reduce((sum, row) => sum + row.dedicatedUnits, 0);
+      const totalRegions = new Set(groups.map(group => group.region).filter(Boolean)).size;
+
+      byId("inputPanelTitle").textContent = "Advanced plan";
+      setMetricText(
+        { label: "Flex licenses needed", note: `${totalCapacityLicenses} for Cloud PC capacity, ${totalPeakSessions} for peak sessions` },
+        { label: "Deployment groups", note: `${totalRegions} region${totalRegions === 1 ? "" : "s"} across ${sizeRows.length} Cloud PC size${sizeRows.length === 1 ? "" : "s"}` },
+        { label: "Shared pool Cloud PCs", note: "Summed from shared users active at peak." },
+        { label: "Peak active sessions", note: "Calculated per size, then totaled across sizes." },
+        { label: "Cloud Apps pool PCs", note: "Summed from Cloud Apps users active at peak." }
+      );
+      setMetric("usedUnits", totalLicenses, "blue");
+      setMetric("unitsLeft", groups.length, groups.length === 0 ? "yellow" : "green");
+      setMetric("sharedLeft", totalSharedPeak, totalSharedPeak === 0 ? "yellow" : "green");
+      setMetric("dedicatedLeft", totalPeakSessions, totalPeakSessions === 0 ? "yellow" : "green");
+      setMetric("cloudAppsMetric", totalCloudAppsPeak, totalCloudAppsPeak === 0 ? "yellow" : "purple");
+
+      renderAdvancedAnswer({ totalLicenses, totalDedicatedUsers, totalSharedPeak, totalCloudAppsPeak, totalPeakSessions, sizeRows });
+      renderAdvancedBreakdown(sizeRows);
+      renderUnits({
+        licenses: totalLicenses,
+        dedicated: totalDedicatedUsers,
+        shared: totalSharedPeak,
+        cloudApps: totalCloudAppsPeak,
+        sharedUnits: totalSharedPeak + totalCloudAppsPeak,
+        dedicatedUnits: totalDedicatedUnits,
+        usedUnits: totalCapacityLicenses
+      });
     }
 
     function renderAnswer(model) {
@@ -926,6 +1139,53 @@
       if (model.concurrencyGap > 0) {
         answer.className = "answer warn";
         text.textContent += ` The recommendation adds ${model.concurrencyGap} license${model.concurrencyGap === 1 ? "" : "s"} because peak active sessions are higher than Cloud PC capacity units.`;
+      }
+    }
+
+    function renderAdvancedAnswer(model) {
+      const answer = byId("answer");
+      const title = byId("answerTitle");
+      const text = byId("answerText");
+      const wasOpen = answer.open;
+      answer.className = model.totalLicenses === 0 ? "answer warn" : "answer good";
+      answer.open = wasOpen;
+      title.textContent = `${model.totalLicenses} Flex licenses needed across this advanced plan.`;
+      text.textContent = `This covers ${model.totalDedicatedUsers} dedicated users, ${model.totalSharedPeak} shared pool Cloud PCs, and ${model.totalCloudAppsPeak} Cloud Apps pool Cloud PCs across ${model.sizeRows.length} Cloud PC size${model.sizeRows.length === 1 ? "" : "s"}. Peak active sessions total ${model.totalPeakSessions}. Licenses are grouped by Cloud PC size.`;
+    }
+
+    function renderAdvancedBreakdown(rows) {
+      const panel = byId("advancedBreakdownPanel");
+      const body = byId("advancedBreakdown");
+      body.innerHTML = "";
+      panel.hidden = currentMode !== "advanced";
+
+      if (rows.length === 0) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 7;
+        cell.textContent = "Add a deployment group to see the per-size license plan.";
+        row.appendChild(cell);
+        body.appendChild(row);
+        return;
+      }
+
+      for (const item of rows) {
+        const row = document.createElement("tr");
+        const cells = [
+          item.size,
+          [...item.regions].join(", ") || "-",
+          item.dedicatedUsers,
+          item.sharedPeak,
+          item.cloudAppsPeak,
+          item.peakSessions,
+          item.recommendedLicenses
+        ];
+        for (const value of cells) {
+          const cell = document.createElement("td");
+          cell.textContent = value;
+          row.appendChild(cell);
+        }
+        body.appendChild(row);
       }
     }
 
@@ -1046,6 +1306,101 @@
       }
     }
 
+    function createAdvancedGroup(group) {
+      group = {
+        region: "",
+        size: sizeOptions[0],
+        dedicatedUsers: 0,
+        dedicatedPeak: 0,
+        sharedPeak: 0,
+        cloudAppsPeak: 0,
+        ...group
+      };
+      advancedGroupCounter += 1;
+      const id = `advanced-${advancedGroupCounter}`;
+      const wrapper = document.createElement("article");
+      wrapper.className = "advanced-group";
+      wrapper.dataset.advancedGroup = id;
+      wrapper.innerHTML = `
+        <div class="advanced-group-header">
+          <span>Deployment group</span>
+          <button class="advanced-remove" type="button" data-remove-advanced="${id}">Remove</button>
+        </div>
+        <div class="advanced-fields">
+          <div class="advanced-two">
+            <label>
+              <strong>Region or group</strong>
+              <input data-advanced-field="region" type="text" value="${escapeAttribute(group.region)}" placeholder="Europe">
+            </label>
+            <label>
+              <strong>Cloud PC size</strong>
+              <select data-advanced-field="size">
+                ${sizeOptions.map(size => `<option value="${escapeAttribute(size)}"${size === group.size ? " selected" : ""}>${escapeHtml(size)}</option>`).join("")}
+              </select>
+            </label>
+          </div>
+          <div class="advanced-number-grid">
+            <label>
+              <strong>Dedicated users</strong>
+              <input data-advanced-field="dedicatedUsers" type="number" min="0" step="1" value="${group.dedicatedUsers}">
+            </label>
+            <label>
+              <strong>Dedicated active at peak</strong>
+              <input data-advanced-field="dedicatedPeak" type="number" min="0" step="1" value="${group.dedicatedPeak}">
+            </label>
+            <label>
+              <strong>Shared active at peak</strong>
+              <input data-advanced-field="sharedPeak" type="number" min="0" step="1" value="${group.sharedPeak}">
+            </label>
+            <label>
+              <strong>Cloud Apps active at peak</strong>
+              <input data-advanced-field="cloudAppsPeak" type="number" min="0" step="1" value="${group.cloudAppsPeak}">
+            </label>
+          </div>
+        </div>`;
+      return wrapper;
+    }
+
+    function renderAdvancedGroups(groups) {
+      const container = byId("advancedGroups");
+      container.innerHTML = "";
+      for (const group of groups) {
+        container.appendChild(createAdvancedGroup(group));
+      }
+    }
+
+    function readAdvancedGroups() {
+      return [...document.querySelectorAll("[data-advanced-group]")].map(group => {
+        const field = (name) => group.querySelector(`[data-advanced-field="${name}"]`);
+        return {
+          region: field("region").value.trim(),
+          size: field("size").value,
+          dedicatedUsers: readFieldNumber(field("dedicatedUsers")),
+          dedicatedPeak: readFieldNumber(field("dedicatedPeak")),
+          sharedPeak: readFieldNumber(field("sharedPeak")),
+          cloudAppsPeak: readFieldNumber(field("cloudAppsPeak"))
+        };
+      });
+    }
+
+    function getDefaultAdvancedGroups() {
+      return [
+        { region: "Europe", size: "4vCPU/16GB/128GB", dedicatedUsers: 100, dedicatedPeak: 30, sharedPeak: 75, cloudAppsPeak: 0 },
+        { region: "US Central", size: "2vCPU/8GB/128GB", dedicatedUsers: 40, dedicatedPeak: 15, sharedPeak: 25, cloudAppsPeak: 10 }
+      ];
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;");
+    }
+
+    function escapeAttribute(value) {
+      return escapeHtml(value).replaceAll('"', "&quot;");
+    }
+
     inputIds.forEach((id) => byId(id).addEventListener("input", calculate));
     document.querySelectorAll("[data-mode]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -1057,8 +1412,25 @@
         });
         byId("currentFields").classList.toggle("active", currentMode === "current");
         byId("planningFields").classList.toggle("active", currentMode === "planning");
+        byId("advancedFields").classList.toggle("active", currentMode === "advanced");
         calculate();
       });
+    });
+    byId("addAdvancedGroup").addEventListener("click", () => {
+      byId("advancedGroups").appendChild(createAdvancedGroup({ region: "New group" }));
+      calculate();
+    });
+    byId("advancedGroups").addEventListener("input", calculate);
+    byId("advancedGroups").addEventListener("change", calculate);
+    byId("advancedGroups").addEventListener("click", (event) => {
+      const button = event.target.closest("[data-remove-advanced]");
+      if (!button) {
+        return;
+      }
+
+      const group = button.closest("[data-advanced-group]");
+      group?.remove();
+      calculate();
     });
     document.querySelectorAll("[data-visual-filter]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -1078,10 +1450,15 @@
       });
     });
     byId("clear").addEventListener("click", () => {
-      const idsToClear = currentMode === "current" ? currentInputIds : planningInputIds;
-      idsToClear.forEach((id) => byId(id).value = 0);
+      if (currentMode === "advanced") {
+        renderAdvancedGroups([{ region: "New group", size: sizeOptions[0], dedicatedUsers: 0, dedicatedPeak: 0, sharedPeak: 0, cloudAppsPeak: 0 }]);
+      } else {
+        const idsToClear = currentMode === "current" ? currentInputIds : planningInputIds;
+        idsToClear.forEach((id) => byId(id).value = 0);
+      }
       calculate();
     });
+    renderAdvancedGroups(getDefaultAdvancedGroups());
     calculate();
   </script>
 </body>
