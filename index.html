@@ -20,6 +20,8 @@
       --subtle: #8b949e;
       --green: #3fb950;
       --green-soft: rgba(63, 185, 80, 0.14);
+      --purple: #a371f7;
+      --purple-soft: rgba(163, 113, 247, 0.14);
       --yellow: #d29922;
       --yellow-soft: rgba(210, 153, 34, 0.16);
       --red: #f85149;
@@ -167,6 +169,38 @@
     .inputs {
       display: grid;
       gap: 16px;
+    }
+
+    .mode-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      padding: 4px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #0d1117;
+    }
+
+    .mode-tab {
+      min-height: 38px;
+      border-color: transparent;
+      background: transparent;
+      color: var(--muted);
+    }
+
+    .mode-tab.active {
+      background: var(--ms-blue-soft);
+      border-color: rgba(88, 166, 255, 0.38);
+      color: var(--text);
+    }
+
+    .mode-fields {
+      display: none;
+      gap: 16px;
+    }
+
+    .mode-fields.active {
+      display: grid;
     }
 
     label {
@@ -379,7 +413,12 @@
 
     .unit.shared {
       background: var(--ms-blue-soft);
-      border-color: rgba(0, 120, 212, 0.35);
+      border-color: rgba(88, 166, 255, 0.45);
+    }
+
+    .unit.cloud-apps {
+      background: var(--purple-soft);
+      border-color: rgba(163, 113, 247, 0.45);
     }
 
     .unit.free {
@@ -406,6 +445,7 @@
     }
 
     .badge.shared { color: #79c0ff; border-color: rgba(88, 166, 255, 0.45); background: rgba(88, 166, 255, 0.10); }
+    .badge.cloud-apps { color: var(--purple); border-color: rgba(163, 113, 247, 0.45); background: var(--purple-soft); }
     .badge.dedicated { color: var(--green); border-color: rgba(16, 124, 16, 0.35); background: var(--green-soft); }
 
     .unit-description {
@@ -417,8 +457,8 @@
     .shared-box {
       border-radius: 14px;
       min-height: 92px;
-      background: rgba(0, 120, 212, 0.15);
-      border: 1px solid rgba(0, 120, 212, 0.32);
+      background: rgba(88, 166, 255, 0.15);
+      border: 1px solid rgba(88, 166, 255, 0.32);
       display: grid;
       place-items: center;
       color: var(--ms-blue-dark);
@@ -426,6 +466,38 @@
       font-weight: 800;
       line-height: 1.3;
     }
+
+    .shared-box.cloud-apps {
+      background: var(--purple-soft);
+      border-color: rgba(163, 113, 247, 0.36);
+      color: #d2a8ff;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--ms-blue);
+    }
+
+    .legend-dot.cloud-apps { background: var(--purple); }
+    .legend-dot.dedicated { background: var(--green); }
 
     .slot-row {
       display: grid;
@@ -495,56 +567,105 @@
       <div class="eyebrow">Windows 365 Flex</div>
       <h1>Make Flex capacity easy to explain.</h1>
       <p class="lead">
-        Enter how many Flex licenses you own and how many Cloud PCs already exist. The calculator
-        shows whether you can create more shared pool Cloud PCs or more dedicated Cloud PCs.
+        Check an existing environment or plan backward from target dedicated users, shared users,
+        and peak active sessions.
       </p>
     </header>
 
     <section class="layout">
       <aside class="panel">
         <div class="panel-header">
-          <h2>Your environment</h2>
+          <h2 id="inputPanelTitle">Your environment</h2>
         </div>
         <div class="panel-body inputs">
-          <label>
-            <strong>Flex licenses purchased</strong>
-            <div class="number-row">
-              <button data-step="licenses" data-delta="-1" aria-label="Decrease licenses">-</button>
-              <input id="licenses" type="number" min="0" step="1" value="5">
-              <button data-step="licenses" data-delta="1" aria-label="Increase licenses">+</button>
-            </div>
-            <span class="hint">Licenses for this specific vCPU/RAM/storage size.</span>
-          </label>
+          <div class="mode-tabs" role="tablist" aria-label="Calculator mode">
+            <button class="mode-tab active" type="button" data-mode="current" role="tab" aria-selected="true">Check current</button>
+            <button class="mode-tab" type="button" data-mode="planning" role="tab" aria-selected="false">Plan new</button>
+          </div>
 
-          <label>
-            <strong>Dedicated Cloud PCs</strong>
-            <div class="number-row">
-              <button data-step="dedicated" data-delta="-1" aria-label="Decrease dedicated Cloud PCs">-</button>
-              <input id="dedicated" type="number" min="0" step="1" value="4">
-              <button data-step="dedicated" data-delta="1" aria-label="Increase dedicated Cloud PCs">+</button>
-            </div>
-            <span class="hint">Dedicated Flex machines already created or provisioning.</span>
-          </label>
+          <div id="currentFields" class="mode-fields active">
+            <label>
+              <strong>Flex licenses purchased</strong>
+              <div class="number-row">
+                <button data-step="licenses" data-delta="-1" aria-label="Decrease licenses">-</button>
+                <input id="licenses" type="number" min="0" step="1" value="5">
+                <button data-step="licenses" data-delta="1" aria-label="Increase licenses">+</button>
+              </div>
+              <span class="hint">Licenses for this specific vCPU/RAM/storage size.</span>
+            </label>
 
-          <label>
-            <strong>Shared pool Cloud PCs</strong>
-            <div class="number-row">
-              <button data-step="shared" data-delta="-1" aria-label="Decrease shared pool Cloud PCs">-</button>
-              <input id="shared" type="number" min="0" step="1" value="2">
-              <button data-step="shared" data-delta="1" aria-label="Increase shared pool Cloud PCs">+</button>
-            </div>
-            <span class="hint">Cloud PCs backing regular shared pools.</span>
-          </label>
+            <label>
+              <strong>Dedicated Cloud PCs</strong>
+              <div class="number-row">
+                <button data-step="dedicated" data-delta="-1" aria-label="Decrease dedicated Cloud PCs">-</button>
+                <input id="dedicated" type="number" min="0" step="1" value="4">
+                <button data-step="dedicated" data-delta="1" aria-label="Increase dedicated Cloud PCs">+</button>
+              </div>
+              <span class="hint">Dedicated Flex machines already created or provisioning.</span>
+            </label>
 
-          <label>
-            <strong>Cloud Apps pool Cloud PCs</strong>
-            <div class="number-row">
-              <button data-step="cloudApps" data-delta="-1" aria-label="Decrease Cloud Apps pool Cloud PCs">-</button>
-              <input id="cloudApps" type="number" min="0" step="1" value="1">
-              <button data-step="cloudApps" data-delta="1" aria-label="Increase Cloud Apps pool Cloud PCs">+</button>
-            </div>
-            <span class="hint">Cloud PCs backing Windows 365 Cloud Apps pools.</span>
-          </label>
+            <label>
+              <strong>Shared pool Cloud PCs</strong>
+              <div class="number-row">
+                <button data-step="shared" data-delta="-1" aria-label="Decrease shared pool Cloud PCs">-</button>
+                <input id="shared" type="number" min="0" step="1" value="2">
+                <button data-step="shared" data-delta="1" aria-label="Increase shared pool Cloud PCs">+</button>
+              </div>
+              <span class="hint">Cloud PCs backing regular shared pools.</span>
+            </label>
+
+            <label>
+              <strong>Cloud Apps pool Cloud PCs</strong>
+              <div class="number-row">
+                <button data-step="cloudApps" data-delta="-1" aria-label="Decrease Cloud Apps pool Cloud PCs">-</button>
+                <input id="cloudApps" type="number" min="0" step="1" value="1">
+                <button data-step="cloudApps" data-delta="1" aria-label="Increase Cloud Apps pool Cloud PCs">+</button>
+              </div>
+              <span class="hint">Cloud PCs backing Windows 365 Cloud Apps pools.</span>
+            </label>
+          </div>
+
+          <div id="planningFields" class="mode-fields">
+            <label>
+              <strong>Dedicated users</strong>
+              <div class="number-row">
+                <button data-step="planDedicatedUsers" data-delta="-1" aria-label="Decrease dedicated users">-</button>
+                <input id="planDedicatedUsers" type="number" min="0" step="1" value="100">
+                <button data-step="planDedicatedUsers" data-delta="1" aria-label="Increase dedicated users">+</button>
+              </div>
+              <span class="hint">Users who each need their own assigned Cloud PC.</span>
+            </label>
+
+            <label>
+              <strong>Dedicated users active at peak</strong>
+              <div class="number-row">
+                <button data-step="planDedicatedPeak" data-delta="-1" aria-label="Decrease peak dedicated users">-</button>
+                <input id="planDedicatedPeak" type="number" min="0" step="1" value="30">
+                <button data-step="planDedicatedPeak" data-delta="1" aria-label="Increase peak dedicated users">+</button>
+              </div>
+              <span class="hint">Expected dedicated users signed in at the same time.</span>
+            </label>
+
+            <label>
+              <strong>Shared users</strong>
+              <div class="number-row">
+                <button data-step="planSharedUsers" data-delta="-1" aria-label="Decrease shared users">-</button>
+                <input id="planSharedUsers" type="number" min="0" step="1" value="300">
+                <button data-step="planSharedUsers" data-delta="1" aria-label="Increase shared users">+</button>
+              </div>
+              <span class="hint">People who can use the shared pool.</span>
+            </label>
+
+            <label>
+              <strong>Shared users active at peak</strong>
+              <div class="number-row">
+                <button data-step="planSharedPeak" data-delta="-1" aria-label="Decrease peak shared users">-</button>
+                <input id="planSharedPeak" type="number" min="0" step="1" value="75">
+                <button data-step="planSharedPeak" data-delta="1" aria-label="Increase peak shared users">+</button>
+              </div>
+              <span class="hint">Shared pool Cloud PCs needed for expected peak demand.</span>
+            </label>
+          </div>
 
           <div class="button-row">
             <button class="secondary-button" id="clear" type="button">Clear environment</button>
@@ -560,24 +681,24 @@
 
         <section class="metrics">
           <article class="metric">
-            <div class="label">License units used</div>
+            <div id="metricOneLabel" class="label">License units used</div>
             <div id="usedUnits" class="value">0</div>
             <div id="usedUnitsNote" class="note"></div>
           </article>
           <article class="metric">
-            <div class="label">License units left</div>
+            <div id="metricTwoLabel" class="label">License units left</div>
             <div id="unitsLeft" class="value">0</div>
-            <div class="note">A remaining unit can become 1 shared PC or 3 dedicated PCs.</div>
+            <div id="unitsLeftNote" class="note">A remaining unit can become 1 shared PC or 3 dedicated PCs.</div>
           </article>
           <article class="metric">
-            <div class="label">More shared PCs</div>
+            <div id="metricThreeLabel" class="label">More shared PCs</div>
             <div id="sharedLeft" class="value">0</div>
-            <div class="note">Shared pools use one full license unit each.</div>
+            <div id="sharedLeftNote" class="note">Shared pools use one full license unit each.</div>
           </article>
           <article class="metric">
-            <div class="label">More dedicated PCs</div>
+            <div id="metricFourLabel" class="label">More dedicated PCs</div>
             <div id="dedicatedLeft" class="value">0</div>
-            <div class="note">Dedicated capacity fills 3 slots per license unit.</div>
+            <div id="dedicatedLeftNote" class="note">Dedicated capacity fills 3 slots per license unit.</div>
           </article>
         </section>
 
@@ -586,6 +707,11 @@
             <h2>License unit visual</h2>
           </div>
           <div class="panel-body">
+            <div class="legend" aria-label="Visual color key">
+              <span class="legend-item"><span class="legend-dot" aria-hidden="true"></span>Shared pool</span>
+              <span class="legend-item"><span class="legend-dot cloud-apps" aria-hidden="true"></span>Cloud Apps</span>
+              <span class="legend-item"><span class="legend-dot dedicated" aria-hidden="true"></span>Dedicated</span>
+            </div>
             <div id="units" class="unit-grid"></div>
           </div>
         </section>
@@ -604,7 +730,10 @@
   </main>
 
   <script>
-    const inputIds = ["licenses", "dedicated", "shared", "cloudApps"];
+    const currentInputIds = ["licenses", "dedicated", "shared", "cloudApps"];
+    const planningInputIds = ["planDedicatedUsers", "planDedicatedPeak", "planSharedUsers", "planSharedPeak"];
+    const inputIds = [...currentInputIds, ...planningInputIds];
+    let currentMode = "current";
     const byId = (id) => document.getElementById(id);
     const readNumber = (id) => Math.max(0, Number.parseInt(byId(id).value || "0", 10));
 
@@ -614,7 +743,23 @@
       element.className = `value ${color}`.trim();
     }
 
+    function setMetricText(one, two, three, four) {
+      byId("metricOneLabel").textContent = one.label;
+      byId("usedUnitsNote").textContent = one.note;
+      byId("metricTwoLabel").textContent = two.label;
+      byId("unitsLeftNote").textContent = two.note;
+      byId("metricThreeLabel").textContent = three.label;
+      byId("sharedLeftNote").textContent = three.note;
+      byId("metricFourLabel").textContent = four.label;
+      byId("dedicatedLeftNote").textContent = four.note;
+    }
+
     function calculate() {
+      if (currentMode === "planning") {
+        calculatePlanning();
+        return;
+      }
+
       const licenses = readNumber("licenses");
       const dedicated = readNumber("dedicated");
       const shared = readNumber("shared");
@@ -629,14 +774,71 @@
       const moreDedicated = openDedicatedSlotsInUsedUnits + unitsLeft * 3;
       const moreShared = unitsLeft;
 
+      byId("inputPanelTitle").textContent = "Your environment";
+      setMetricText(
+        { label: "License units used", note: `${sharedUnits} shared units + ${dedicatedUnits} dedicated units` },
+        { label: "License units left", note: "A remaining unit can become 1 shared PC or 3 dedicated PCs." },
+        { label: "More shared PCs", note: "Shared pools use one full license unit each." },
+        { label: "More dedicated PCs", note: "Dedicated capacity fills 3 slots per license unit." }
+      );
       setMetric("usedUnits", usedUnits, overUnits > 0 ? "red" : usedUnits === licenses ? "yellow" : "green");
       setMetric("unitsLeft", unitsLeft, unitsLeft === 0 ? "yellow" : "green");
       setMetric("sharedLeft", moreShared, moreShared === 0 ? "yellow" : "green");
       setMetric("dedicatedLeft", moreDedicated, moreDedicated === 0 ? "yellow" : "green");
-      byId("usedUnitsNote").textContent = `${sharedUnits} shared units + ${dedicatedUnits} dedicated units`;
 
       renderAnswer({ licenses, dedicated, shared, cloudApps, sharedUnits, dedicatedUnits, usedUnits, unitsLeft, overUnits, moreDedicated, moreShared });
       renderUnits({ licenses, dedicated, shared, cloudApps, sharedUnits, dedicatedUnits, usedUnits });
+    }
+
+    function calculatePlanning() {
+      const dedicatedUsers = readNumber("planDedicatedUsers");
+      const dedicatedPeak = readNumber("planDedicatedPeak");
+      const sharedUsers = readNumber("planSharedUsers");
+      const sharedPeak = readNumber("planSharedPeak");
+      const dedicatedCloudPcs = dedicatedUsers;
+      const sharedCloudPcs = sharedPeak;
+      const dedicatedUnits = Math.ceil(dedicatedCloudPcs / 3);
+      const sharedUnits = sharedCloudPcs;
+      const capacityLicenses = dedicatedUnits + sharedUnits;
+      const peakSessions = dedicatedPeak + sharedPeak;
+      const recommendedLicenses = Math.max(capacityLicenses, peakSessions);
+      const concurrencyGap = Math.max(0, peakSessions - capacityLicenses);
+
+      byId("inputPanelTitle").textContent = "Plan new environment";
+      setMetricText(
+        { label: "Flex licenses needed", note: `${capacityLicenses} for Cloud PC capacity, ${peakSessions} for peak sessions` },
+        { label: "Dedicated Cloud PCs", note: "Dedicated users each need their own Cloud PC." },
+        { label: "Shared pool Cloud PCs", note: "Plan one shared pool Cloud PC per expected active shared user." },
+        { label: "Peak active sessions", note: "Flex licenses also set the tenant-wide active session limit for this size." }
+      );
+      setMetric("usedUnits", recommendedLicenses, "blue");
+      setMetric("unitsLeft", dedicatedCloudPcs, dedicatedCloudPcs === 0 ? "yellow" : "green");
+      setMetric("sharedLeft", sharedCloudPcs, sharedCloudPcs === 0 ? "yellow" : "green");
+      setMetric("dedicatedLeft", peakSessions, peakSessions > recommendedLicenses ? "red" : "green");
+
+      renderPlanningAnswer({
+        dedicatedUsers,
+        dedicatedPeak,
+        sharedUsers,
+        sharedPeak,
+        dedicatedCloudPcs,
+        sharedCloudPcs,
+        dedicatedUnits,
+        sharedUnits,
+        capacityLicenses,
+        peakSessions,
+        recommendedLicenses,
+        concurrencyGap
+      });
+      renderUnits({
+        licenses: recommendedLicenses,
+        dedicated: dedicatedCloudPcs,
+        shared: sharedCloudPcs,
+        cloudApps: 0,
+        sharedUnits,
+        dedicatedUnits,
+        usedUnits: capacityLicenses
+      });
     }
 
     function renderAnswer(model) {
@@ -667,6 +869,22 @@
       text.textContent = `You can create ${model.moreShared} more shared pool Cloud PC${model.moreShared === 1 ? "" : "s"} or ${model.moreDedicated} more dedicated Cloud PC${model.moreDedicated === 1 ? "" : "s"}.`;
     }
 
+    function renderPlanningAnswer(model) {
+      const answer = byId("answer");
+      const title = byId("answerTitle");
+      const text = byId("answerText");
+      const wasOpen = answer.open;
+      answer.className = "answer good";
+      answer.open = wasOpen;
+      title.textContent = `${model.recommendedLicenses} Flex licenses needed for this plan.`;
+      text.textContent = `That covers ${model.dedicatedUsers} dedicated users with ${model.dedicatedUnits} license units, plus ${model.sharedPeak} shared pool Cloud PCs for ${model.sharedUsers} shared users. Your expected peak is ${model.peakSessions} active sessions.`;
+
+      if (model.concurrencyGap > 0) {
+        answer.className = "answer warn";
+        text.textContent += ` The recommendation adds ${model.concurrencyGap} license${model.concurrencyGap === 1 ? "" : "s"} because peak active sessions are higher than Cloud PC capacity units.`;
+      }
+    }
+
     function renderUnits(model) {
       const container = byId("units");
       container.innerHTML = "";
@@ -675,8 +893,10 @@
       let sharedLeft = model.shared;
       let dedicatedLeft = model.dedicated;
       const unitsToRender = Math.max(model.licenses, model.usedUnits, 1);
+      const maxVisibleUnits = 48;
+      const visibleUnits = Math.min(unitsToRender, maxVisibleUnits);
 
-      for (let i = 1; i <= unitsToRender; i++) {
+      for (let i = 1; i <= visibleUnits; i++) {
         const unit = document.createElement("article");
         const header = document.createElement("div");
         const badge = document.createElement("span");
@@ -694,15 +914,15 @@
             sharedLeft -= 1;
           }
 
-          unit.className = "unit shared";
-          badge.className = "badge shared";
-          badge.textContent = "1 shared";
+          unit.className = isCloudApps ? "unit cloud-apps" : "unit shared";
+          badge.className = isCloudApps ? "badge cloud-apps" : "badge shared";
+          badge.textContent = isCloudApps ? "Cloud Apps" : "shared";
           desc.textContent = isCloudApps
             ? "This whole license unit is used by one Cloud Apps pool Cloud PC."
             : "This whole license unit is used by one shared pool Cloud PC.";
 
           const sharedBox = document.createElement("div");
-          sharedBox.className = "shared-box";
+          sharedBox.className = isCloudApps ? "shared-box cloud-apps" : "shared-box";
           sharedBox.innerHTML = isCloudApps ? "Cloud Apps<br>pool PC" : "Shared<br>pool PC";
           unit.append(header, sharedBox, desc);
         } else if (dedicatedLeft > 0) {
@@ -742,9 +962,40 @@
 
         container.appendChild(unit);
       }
+
+      if (unitsToRender > maxVisibleUnits) {
+        const hiddenUnits = unitsToRender - maxVisibleUnits;
+        const summary = document.createElement("article");
+        const header = document.createElement("div");
+        const desc = document.createElement("div");
+        const badge = document.createElement("span");
+        summary.className = "unit free";
+        header.className = "unit-header";
+        desc.className = "unit-description";
+        badge.className = "badge";
+        badge.textContent = "summary";
+        header.append(`${hiddenUnits} more license unit${hiddenUnits === 1 ? "" : "s"}`);
+        header.appendChild(badge);
+        desc.textContent = "The visual is capped so large plans stay easy to scan.";
+        summary.append(header, desc);
+        container.appendChild(summary);
+      }
     }
 
     inputIds.forEach((id) => byId(id).addEventListener("input", calculate));
+    document.querySelectorAll("[data-mode]").forEach((button) => {
+      button.addEventListener("click", () => {
+        currentMode = button.dataset.mode;
+        document.querySelectorAll("[data-mode]").forEach((tab) => {
+          const isActive = tab.dataset.mode === currentMode;
+          tab.classList.toggle("active", isActive);
+          tab.setAttribute("aria-selected", isActive ? "true" : "false");
+        });
+        byId("currentFields").classList.toggle("active", currentMode === "current");
+        byId("planningFields").classList.toggle("active", currentMode === "planning");
+        calculate();
+      });
+    });
     document.querySelectorAll("[data-step]").forEach((button) => {
       button.addEventListener("click", () => {
         const id = button.dataset.step;
@@ -754,7 +1005,8 @@
       });
     });
     byId("clear").addEventListener("click", () => {
-      inputIds.forEach((id) => byId(id).value = 0);
+      const idsToClear = currentMode === "current" ? currentInputIds : planningInputIds;
+      idsToClear.forEach((id) => byId(id).value = 0);
       calculate();
     });
     calculate();
