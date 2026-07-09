@@ -275,7 +275,7 @@
 
     .button-row {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr;
       gap: 10px;
       padding-top: 4px;
     }
@@ -369,7 +369,7 @@
       position: absolute;
       top: calc(100% + 8px);
       right: 0;
-      width: calc(200% + 10px);
+      width: min(320px, calc(100vw - 32px));
     }
 
     .share-action {
@@ -786,6 +786,36 @@
         <span>W365 Flex Calculator</span>
       </a>
       <div class="nav-links">
+        <details class="share-menu">
+          <summary>Share</summary>
+          <div class="share-menu-actions">
+            <button class="secondary-button share-action" id="copyShareUrl" type="button">
+              <span class="share-action-content">
+                <span class="share-action-title">Copy shareable URL</span>
+                <span class="share-action-description">Send a link with these inputs included.</span>
+              </span>
+            </button>
+            <button class="secondary-button share-action" id="printSummary" type="button">
+              <span class="share-action-content">
+                <span class="share-action-title">Print or save PDF</span>
+                <span class="share-action-description">Create a clean customer-facing summary.</span>
+              </span>
+            </button>
+            <button class="secondary-button share-action" id="exportConfig" type="button">
+              <span class="share-action-content">
+                <span class="share-action-title">Export configuration</span>
+                <span class="share-action-description">Download a JSON file to share.</span>
+              </span>
+            </button>
+            <button class="secondary-button share-action" id="importConfig" type="button">
+              <span class="share-action-content">
+                <span class="share-action-title">Import configuration</span>
+                <span class="share-action-description">Load inputs from a shared JSON file.</span>
+              </span>
+            </button>
+            <input class="file-input" id="importConfigFile" type="file" accept="application/json,.json">
+          </div>
+        </details>
         <a href="https://github.com/bwya77/W365-Flex-Calculator" target="_blank" rel="noopener noreferrer">View on GitHub</a>
         <a href="https://github.com/bwya77/W365-Flex-Calculator/issues/new?labels=enhancement&template=feature_request.md&title=Feature%3A%20" target="_blank" rel="noopener noreferrer">Request a feature</a>
         <a href="https://github.com/bwya77/W365-Flex-Calculator/issues/new?labels=bug&template=bug_report.md&title=Bug%3A%20" target="_blank" rel="noopener noreferrer">Report a bug</a>
@@ -909,37 +939,7 @@
           </div>
 
           <div class="button-row">
-            <button class="secondary-button" id="clear" type="button">Clear environment</button>
-            <details class="share-menu">
-              <summary>Share</summary>
-              <div class="share-menu-actions">
-                <button class="secondary-button share-action" id="copyShareUrl" type="button">
-                  <span class="share-action-content">
-                    <span class="share-action-title">Copy shareable URL</span>
-                    <span class="share-action-description">Send a link with these inputs included.</span>
-                  </span>
-                </button>
-                <button class="secondary-button share-action" id="printSummary" type="button">
-                  <span class="share-action-content">
-                    <span class="share-action-title">Print or save PDF</span>
-                    <span class="share-action-description">Create a clean customer-facing summary.</span>
-                  </span>
-                </button>
-                <button class="secondary-button share-action" id="exportConfig" type="button">
-                  <span class="share-action-content">
-                    <span class="share-action-title">Export configuration</span>
-                    <span class="share-action-description">Download a JSON file to share.</span>
-                  </span>
-                </button>
-                <button class="secondary-button share-action" id="importConfig" type="button">
-                  <span class="share-action-content">
-                    <span class="share-action-title">Import configuration</span>
-                    <span class="share-action-description">Load inputs from a shared JSON file.</span>
-                  </span>
-                </button>
-                <input class="file-input" id="importConfigFile" type="file" accept="application/json,.json">
-              </div>
-            </details>
+            <button class="secondary-button" id="clear" type="button">Clear</button>
             <span class="share-status" id="shareStatus" role="status" aria-live="polite"></span>
           </div>
         </div>
