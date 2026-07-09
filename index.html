@@ -325,6 +325,31 @@
       gap: 20px;
     }
 
+    .warnings {
+      display: none;
+      border: 1px solid rgba(210, 153, 34, 0.45);
+      border-left: 4px solid var(--yellow);
+      border-radius: 12px;
+      background: var(--yellow-soft);
+      padding: 12px 14px;
+      color: var(--muted);
+    }
+
+    .warnings.visible {
+      display: grid;
+      gap: 8px;
+    }
+
+    .warnings strong {
+      color: var(--yellow);
+    }
+
+    .warnings ul {
+      margin: 0;
+      padding-left: 20px;
+      line-height: 1.45;
+    }
+
     .answer {
       border-radius: 12px;
       padding: 12px 14px;
@@ -578,6 +603,83 @@
       .metrics { grid-template-columns: 1fr; }
       .mode-tabs { grid-template-columns: 1fr; }
     }
+
+    @media print {
+      :root { color-scheme: light; }
+
+      body {
+        color: #111827;
+        background: #fff;
+      }
+
+      main {
+        width: 100%;
+        padding: 0;
+      }
+
+      .topbar,
+      aside.panel,
+      .legend,
+      footer {
+        display: none;
+      }
+
+      .hero {
+        margin-bottom: 18px;
+      }
+
+      .eyebrow {
+        color: #0078d4;
+      }
+
+      h1 {
+        font-size: 28px;
+        letter-spacing: -0.02em;
+      }
+
+      .lead,
+      .answer p,
+      .metric .label,
+      .metric .note,
+      .unit-description,
+      .warnings {
+        color: #374151;
+      }
+
+      .layout,
+      .results,
+      .metrics,
+      .unit-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+      }
+
+      .answer,
+      .metric,
+      .unit,
+      .warnings {
+        background: #fff;
+        border-color: #d1d5db;
+        box-shadow: none;
+        break-inside: avoid;
+      }
+
+      .answer {
+        border-left-color: #0078d4;
+      }
+
+      .answer summary::after {
+        content: "";
+      }
+
+      .answer p {
+        display: block;
+      }
+
+      .metric .value {
+        font-size: 28px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -712,6 +814,8 @@
 
           <div class="button-row">
             <button class="secondary-button" id="clear" type="button">Clear environment</button>
+            <button class="secondary-button" id="copyShareUrl" type="button">Copy shareable URL</button>
+            <button class="secondary-button" id="printSummary" type="button">Print or save PDF</button>
             <button class="secondary-button" id="exportConfig" type="button">Export configuration</button>
             <button class="secondary-button" id="importConfig" type="button">Import configuration</button>
             <input class="file-input" id="importConfigFile" type="file" accept="application/json,.json">
@@ -725,6 +829,8 @@
           <summary><h2 id="answerTitle"></h2></summary>
           <p id="answerText"></p>
         </details>
+
+        <section id="warnings" class="warnings" aria-live="polite"></section>
 
         <section class="metrics">
           <article class="metric">
@@ -824,6 +930,25 @@
       byId("shareStatus").textContent = message;
     }
 
+    function setWarnings(messages) {
+      const container = byId("warnings");
+      container.innerHTML = "";
+      container.classList.toggle("visible", messages.length > 0);
+      if (messages.length === 0) {
+        return;
+      }
+
+      const title = document.createElement("strong");
+      const list = document.createElement("ul");
+      title.textContent = "Check these inputs";
+      messages.forEach((message) => {
+        const item = document.createElement("li");
+        item.textContent = message;
+        list.appendChild(item);
+      });
+      container.append(title, list);
+    }
+
     function setMetric(id, value, color = "") {
       const element = byId(id);
       element.textContent = value;
@@ -862,6 +987,16 @@
       const openDedicatedSlotsInUsedUnits = Math.max(0, dedicatedUnits * 3 - dedicated);
       const moreDedicated = openDedicatedSlotsInUsedUnits + unitsLeft * 3;
       const moreShared = unitsLeft;
+      const warnings = [];
+      if (licenses === 0 && usedUnits > 0) {
+        warnings.push("You have Cloud PCs entered but no Flex licenses purchased.");
+      }
+      if (usedUnits > licenses) {
+        warnings.push("This current environment is over the available license units for this size.");
+      }
+      if (cloudApps > 0 && shared === 0) {
+        warnings.push("Cloud Apps pool Cloud PCs are counted separately from shared pool Cloud PCs.");
+      }
 
       byId("inputPanelTitle").textContent = "Your environment";
       setMetricText(
@@ -879,6 +1014,7 @@
 
       renderAnswer({ licenses, dedicated, shared, cloudApps, sharedUnits, dedicatedUnits, usedUnits, unitsLeft, overUnits, moreDedicated, moreShared });
       renderUnits({ licenses, dedicated, shared, cloudApps, sharedUnits, dedicatedUnits, usedUnits });
+      setWarnings(warnings);
     }
 
     function calculatePlanning() {
@@ -896,6 +1032,22 @@
       const peakSessions = dedicatedPeak + sharedPeak + cloudAppsPeak;
       const recommendedLicenses = Math.max(capacityLicenses, peakSessions);
       const concurrencyGap = Math.max(0, peakSessions - capacityLicenses);
+      const warnings = [];
+      if (dedicatedPeak > dedicatedUsers) {
+        warnings.push("Dedicated users active at peak cannot be higher than total dedicated users.");
+      }
+      if (sharedPeak > sharedUsers) {
+        warnings.push("Shared users active at peak is higher than total shared users.");
+      }
+      if (dedicatedUsers === 0 && dedicatedPeak > 0) {
+        warnings.push("Dedicated peak users are entered but dedicated users is zero.");
+      }
+      if (sharedUsers === 0 && sharedPeak > 0) {
+        warnings.push("Shared peak users are entered but shared users is zero.");
+      }
+      if (recommendedLicenses === 0) {
+        warnings.push("Add at least one user or peak value to calculate a plan.");
+      }
 
       byId("inputPanelTitle").textContent = "Plan new environment";
       setMetricText(
@@ -936,6 +1088,7 @@
         dedicatedUnits,
         usedUnits: capacityLicenses
       });
+      setWarnings(warnings);
     }
 
     function renderAnswer(model) {
@@ -1110,6 +1263,57 @@
       };
     }
 
+    function encodeConfiguration(configuration) {
+      const json = JSON.stringify(configuration);
+      const bytes = new TextEncoder().encode(json);
+      let binary = "";
+      bytes.forEach((byte) => binary += String.fromCharCode(byte));
+      return btoa(binary)
+        .replaceAll("+", "-")
+        .replaceAll("/", "_")
+        .replaceAll("=", "");
+    }
+
+    function decodeConfiguration(value) {
+      const padded = value.replaceAll("-", "+").replaceAll("_", "/").padEnd(Math.ceil(value.length / 4) * 4, "=");
+      const binary = atob(padded);
+      const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+      return JSON.parse(new TextDecoder().decode(bytes));
+    }
+
+    function getShareableUrl() {
+      const url = new URL(window.location.href);
+      url.searchParams.set("config", encodeConfiguration(getConfiguration()));
+      return url.toString();
+    }
+
+    async function copyShareableUrl() {
+      const url = getShareableUrl();
+      try {
+        await navigator.clipboard.writeText(url);
+        setShareStatus("Shareable URL copied.");
+      } catch {
+        window.prompt("Copy this shareable URL", url);
+        setShareStatus("Shareable URL ready to copy.");
+      }
+    }
+
+    function loadConfigurationFromUrl() {
+      const encoded = new URLSearchParams(window.location.search).get("config");
+      if (!encoded) {
+        return false;
+      }
+
+      try {
+        importConfiguration(decodeConfiguration(encoded));
+        setShareStatus("Configuration loaded from URL.");
+        return true;
+      } catch {
+        setShareStatus("Could not load the configuration in this URL.");
+        return false;
+      }
+    }
+
     function exportConfiguration() {
       const configuration = getConfiguration();
       const blob = new Blob([JSON.stringify(configuration, null, 2)], { type: "application/json" });
@@ -1133,6 +1337,11 @@
       setInputValues(configuration.planning, planningInputIds);
       setMode(configuration.mode);
       setShareStatus("Configuration imported.");
+    }
+
+    function printSummary() {
+      byId("answer").open = true;
+      window.print();
     }
 
     inputIds.forEach((id) => byId(id).addEventListener("input", calculate));
@@ -1162,6 +1371,8 @@
       setShareStatus("");
       calculate();
     });
+    byId("copyShareUrl").addEventListener("click", copyShareableUrl);
+    byId("printSummary").addEventListener("click", printSummary);
     byId("exportConfig").addEventListener("click", exportConfiguration);
     byId("importConfig").addEventListener("click", () => byId("importConfigFile").click());
     byId("importConfigFile").addEventListener("change", async (event) => {
@@ -1178,7 +1389,9 @@
         event.target.value = "";
       }
     });
-    calculate();
+    if (!loadConfigurationFromUrl()) {
+      calculate();
+    }
   </script>
 </body>
 </html>
