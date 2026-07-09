@@ -275,7 +275,7 @@
 
     .button-row {
       display: grid;
-      grid-template-columns: 1fr;
+      grid-template-columns: 1fr 1fr;
       gap: 10px;
       padding-top: 4px;
     }
@@ -303,6 +303,46 @@
     .coffee-button {
       color: #ffdd00;
       border-color: rgba(255, 221, 0, 0.35);
+    }
+
+    .share-menu {
+      display: grid;
+      gap: 10px;
+    }
+
+    .share-menu[open] {
+      grid-column: 1 / -1;
+    }
+
+    .share-menu summary {
+      min-height: 42px;
+      border-radius: 8px;
+      border: 1px solid var(--border-strong);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      font-weight: 700;
+      color: var(--text);
+      background: #21262d;
+      list-style: none;
+    }
+
+    .share-menu summary:hover {
+      background: var(--ms-blue-soft);
+      border-color: var(--ms-blue);
+    }
+
+    .share-menu summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .share-menu-actions {
+      display: grid;
+      gap: 8px;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #0d1117;
     }
 
     .hint {
@@ -601,7 +641,8 @@
     @media (max-width: 560px) {
       main { width: min(100% - 20px, 1200px); padding-top: 26px; }
       .metrics { grid-template-columns: 1fr; }
-      .mode-tabs { grid-template-columns: 1fr; }
+      .mode-tabs,
+      .button-row { grid-template-columns: 1fr; }
     }
 
     @media print {
@@ -814,11 +855,16 @@
 
           <div class="button-row">
             <button class="secondary-button" id="clear" type="button">Clear environment</button>
-            <button class="secondary-button" id="copyShareUrl" type="button">Copy shareable URL</button>
-            <button class="secondary-button" id="printSummary" type="button">Print or save PDF</button>
-            <button class="secondary-button" id="exportConfig" type="button">Export configuration</button>
-            <button class="secondary-button" id="importConfig" type="button">Import configuration</button>
-            <input class="file-input" id="importConfigFile" type="file" accept="application/json,.json">
+            <details class="share-menu">
+              <summary>Share plan</summary>
+              <div class="share-menu-actions">
+                <button class="secondary-button" id="copyShareUrl" type="button">Copy shareable URL</button>
+                <button class="secondary-button" id="printSummary" type="button">Print or save PDF</button>
+                <button class="secondary-button" id="exportConfig" type="button">Export configuration</button>
+                <button class="secondary-button" id="importConfig" type="button">Import configuration</button>
+                <input class="file-input" id="importConfigFile" type="file" accept="application/json,.json">
+              </div>
+            </details>
             <span class="share-status" id="shareStatus" role="status" aria-live="polite"></span>
           </div>
         </div>
