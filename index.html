@@ -29,7 +29,8 @@
       --yellow-soft: rgba(210, 153, 34, 0.16);
       --red: #f85149;
       --red-soft: rgba(248, 81, 73, 0.14);
-      --shadow: 0 16px 40px rgba(0, 0, 0, 0.32);
+      --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+      --soft-shadow: 0 10px 32px rgba(0, 0, 0, 0.22);
       font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     }
 
@@ -40,7 +41,8 @@
       min-height: 100vh;
       color: var(--text);
       background:
-        radial-gradient(circle at top left, rgba(88, 166, 255, 0.16), transparent 34rem),
+        radial-gradient(circle at 50% 0, rgba(88, 166, 255, 0.20), transparent 34rem),
+        radial-gradient(circle at 88% 18%, rgba(163, 113, 247, 0.12), transparent 26rem),
         linear-gradient(180deg, #010409 0, var(--bg) 360px);
     }
 
@@ -55,8 +57,8 @@
       top: 0;
       z-index: 10;
       border-bottom: 1px solid var(--border);
-      background: rgba(13, 17, 23, 0.86);
-      backdrop-filter: blur(16px);
+      background: rgba(1, 4, 9, 0.70);
+      backdrop-filter: blur(22px);
     }
 
     .topbar-inner {
@@ -92,7 +94,7 @@
     .footer-links {
       display: flex;
       align-items: center;
-      gap: 14px;
+      gap: 18px;
       flex-wrap: wrap;
     }
 
@@ -100,8 +102,8 @@
     .footer-links a {
       color: var(--muted);
       text-decoration: none;
-      font-weight: 600;
-      font-size: 0.92rem;
+      font-weight: 650;
+      font-size: 0.86rem;
     }
 
     .nav-links a:hover,
@@ -112,8 +114,11 @@
 
     .hero {
       display: grid;
-      gap: 14px;
-      margin-bottom: 24px;
+      justify-items: center;
+      text-align: center;
+      gap: 18px;
+      margin-bottom: 34px;
+      padding: 26px 0 12px;
     }
 
     .eyebrow {
@@ -127,17 +132,46 @@
     h1 {
       margin: 0;
       max-width: 860px;
-      font-size: clamp(2.1rem, 5vw, 4.35rem);
+      font-size: clamp(2.8rem, 7vw, 5.6rem);
       line-height: 0.98;
-      letter-spacing: -0.055em;
+      letter-spacing: -0.07em;
     }
 
     .lead {
       max-width: 780px;
       margin: 0;
       color: var(--muted);
-      font-size: 1.08rem;
+      font-size: clamp(1.05rem, 2vw, 1.25rem);
       line-height: 1.55;
+    }
+
+    .hero-actions {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .hero-secondary-link {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 18px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      color: var(--muted);
+      text-decoration: none;
+      font-weight: 700;
+      background: rgba(22, 27, 34, 0.62);
+    }
+
+    .hero-secondary-link:hover {
+      border-color: var(--ms-blue);
+      color: var(--text);
+      background: var(--ms-blue-soft);
     }
 
     .layout {
@@ -148,17 +182,22 @@
     }
 
     .panel {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      box-shadow: var(--shadow);
+      background: rgba(22, 27, 34, 0.78);
+      border: 1px solid rgba(240, 246, 252, 0.10);
+      border-radius: 24px;
+      box-shadow: var(--soft-shadow);
       overflow: visible;
+      backdrop-filter: blur(18px);
     }
 
     .panel-header {
       padding: 18px 20px;
       border-bottom: 1px solid var(--border);
-      background: var(--surface-alt);
+      background: rgba(13, 17, 23, 0.72);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
     }
 
     .panel-header h2,
@@ -273,11 +312,17 @@
       border-color: var(--ms-blue-dark);
     }
 
-    .button-row {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      padding-top: 4px;
+    .panel-action {
+      min-height: 32px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 0.82rem;
+      background: transparent;
+    }
+
+    .panel-action:hover {
+      color: var(--text);
     }
 
     .secondary-button,
@@ -307,7 +352,7 @@
 
     .share-menu {
       position: relative;
-      width: 100%;
+      width: auto;
     }
 
     .share-menu[open] {
@@ -315,24 +360,26 @@
     }
 
     .share-menu summary {
-      min-height: 42px;
-      border-radius: 8px;
-      border: 1px solid var(--border-strong);
+      min-height: 46px;
+      border-radius: 999px;
+      border: 1px solid rgba(88, 166, 255, 0.42);
       display: inline-flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      width: 100%;
+      width: auto;
+      padding: 0 20px;
       cursor: pointer;
-      font-weight: 700;
+      font-weight: 800;
       color: var(--text);
-      background: #21262d;
+      background: linear-gradient(135deg, rgba(88, 166, 255, 0.98), rgba(121, 192, 255, 0.86));
+      box-shadow: 0 14px 36px rgba(88, 166, 255, 0.22);
       list-style: none;
     }
 
     .share-menu summary:hover {
-      background: var(--ms-blue-soft);
-      border-color: var(--ms-blue);
+      background: linear-gradient(135deg, rgba(121, 192, 255, 1), rgba(88, 166, 255, 0.92));
+      border-color: rgba(121, 192, 255, 0.78);
     }
 
     .share-menu summary::after {
@@ -346,8 +393,7 @@
     }
 
     .share-menu[open] summary {
-      border-color: var(--ms-blue);
-      background: var(--ms-blue-soft);
+      border-color: rgba(121, 192, 255, 0.82);
     }
 
     .share-menu[open] summary::after {
@@ -363,12 +409,14 @@
       gap: 8px;
       padding: 10px;
       border: 1px solid var(--border);
-      border-radius: 12px;
-      background: #0d1117;
+      border-radius: 18px;
+      background: rgba(13, 17, 23, 0.96);
       box-shadow: var(--shadow);
       position: absolute;
       top: calc(100% + 8px);
-      right: 0;
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
       width: min(320px, calc(100vw - 32px));
     }
 
@@ -691,8 +739,7 @@
     @media (max-width: 560px) {
       main { width: min(100% - 20px, 1200px); padding-top: 26px; }
       .metrics { grid-template-columns: 1fr; }
-      .mode-tabs,
-      .button-row { grid-template-columns: 1fr; }
+      .mode-tabs { grid-template-columns: 1fr; }
       .share-menu-actions {
         position: static;
         width: 100%;
@@ -786,8 +833,24 @@
         <span>W365 Flex Calculator</span>
       </a>
       <div class="nav-links">
+        <a href="https://github.com/bwya77/W365-Flex-Calculator" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://github.com/bwya77/W365-Flex-Calculator/issues/new?labels=enhancement&template=feature_request.md&title=Feature%3A%20" target="_blank" rel="noopener noreferrer">Request feature</a>
+        <a href="https://github.com/bwya77/W365-Flex-Calculator/issues/new?labels=bug&template=bug_report.md&title=Bug%3A%20" target="_blank" rel="noopener noreferrer">Report bug</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <header class="hero">
+      <div class="eyebrow">Windows 365 Flex</div>
+      <h1>Make Flex capacity easy to explain.</h1>
+      <p class="lead">
+        Check an existing environment or plan backward from target dedicated users, shared users,
+        and peak active sessions.
+      </p>
+      <div class="hero-actions">
         <details class="share-menu">
-          <summary>Share</summary>
+          <summary>Share plan</summary>
           <div class="share-menu-actions">
             <button class="secondary-button share-action" id="copyShareUrl" type="button">
               <span class="share-action-content">
@@ -816,27 +879,16 @@
             <input class="file-input" id="importConfigFile" type="file" accept="application/json,.json">
           </div>
         </details>
-        <a href="https://github.com/bwya77/W365-Flex-Calculator" target="_blank" rel="noopener noreferrer">View on GitHub</a>
-        <a href="https://github.com/bwya77/W365-Flex-Calculator/issues/new?labels=enhancement&template=feature_request.md&title=Feature%3A%20" target="_blank" rel="noopener noreferrer">Request a feature</a>
-        <a href="https://github.com/bwya77/W365-Flex-Calculator/issues/new?labels=bug&template=bug_report.md&title=Bug%3A%20" target="_blank" rel="noopener noreferrer">Report a bug</a>
+        <a class="hero-secondary-link" href="https://github.com/bwya77/W365-Flex-Calculator" target="_blank" rel="noopener noreferrer">View source</a>
       </div>
-    </div>
-  </nav>
-
-  <main>
-    <header class="hero">
-      <div class="eyebrow">Windows 365 Flex</div>
-      <h1>Make Flex capacity easy to explain.</h1>
-      <p class="lead">
-        Check an existing environment or plan backward from target dedicated users, shared users,
-        and peak active sessions.
-      </p>
+      <span class="share-status" id="shareStatus" role="status" aria-live="polite"></span>
     </header>
 
     <section class="layout">
       <aside class="panel">
         <div class="panel-header">
           <h2 id="inputPanelTitle">Your environment</h2>
+          <button class="panel-action" id="clear" type="button">Clear</button>
         </div>
         <div class="panel-body inputs">
           <div class="mode-tabs" role="tablist" aria-label="Calculator mode">
@@ -936,11 +988,6 @@
               </div>
               <span class="hint">Cloud Apps pool Cloud PCs needed for expected peak app demand.</span>
             </label>
-          </div>
-
-          <div class="button-row">
-            <button class="secondary-button" id="clear" type="button">Clear</button>
-            <span class="share-status" id="shareStatus" role="status" aria-live="polite"></span>
           </div>
         </div>
       </aside>
