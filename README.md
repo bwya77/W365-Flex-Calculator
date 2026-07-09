@@ -11,7 +11,6 @@ A static calculator that explains Windows 365 Flex license-unit capacity.
 - How many dedicated Flex Cloud PCs can still be created?
 - How many Flex licenses are needed when planning backward from users and peak demand?
 - How can teams share calculator inputs with each other?
-- How can a calculator summary be printed or saved as a PDF?
 - How does the 3 dedicated Cloud PCs per license rule work?
 - Which license units are consumed by shared pools vs dedicated Cloud PCs?
 
@@ -56,9 +55,7 @@ concurrency licenses = dedicated users active at peak + shared users active at p
 
 ## Sharing configurations
 
-Use **Export configuration** to download the current calculator inputs as a JSON file. Share that file with another team, then use **Import configuration** to load the same current-state or planning inputs in their browser.
-
-Use **Copy shareable URL** to copy a link with the current inputs encoded in the URL. Use **Print or save PDF** to open the browser print dialog with a cleaner summary layout.
+Use the link icon in the calculator panel to copy a unique URL with the current inputs encoded in the link. Share that link with another team so they can open the same current-state or planning inputs in their browser.
 
 The calculator also shows validation hints when inputs look inconsistent, such as peak users being higher than total users.
 

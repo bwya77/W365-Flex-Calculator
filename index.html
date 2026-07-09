@@ -145,35 +145,6 @@
       line-height: 1.55;
     }
 
-    .hero-actions {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-top: 8px;
-    }
-
-    .hero-secondary-link {
-      min-height: 44px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      padding: 0 18px;
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      color: var(--muted);
-      text-decoration: none;
-      font-weight: 700;
-      background: rgba(22, 27, 34, 0.62);
-    }
-
-    .hero-secondary-link:hover {
-      border-color: var(--ms-blue);
-      color: var(--text);
-      background: var(--ms-blue-soft);
-    }
-
     .layout {
       display: grid;
       grid-template-columns: 360px minmax(0, 1fr);
@@ -325,6 +296,34 @@
       color: var(--text);
     }
 
+    .panel-header-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-action {
+      width: 34px;
+      min-height: 34px;
+      padding: 0;
+      border-radius: 999px;
+      color: var(--muted);
+      background: transparent;
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .icon-action:hover {
+      color: var(--text);
+      border-color: var(--ms-blue);
+      background: var(--ms-blue-soft);
+    }
+
+    .icon-action svg {
+      width: 16px;
+      height: 16px;
+    }
+
     .secondary-button,
     .coffee-button {
       display: inline-flex;
@@ -350,99 +349,6 @@
       border-color: rgba(255, 221, 0, 0.35);
     }
 
-    .share-menu {
-      position: relative;
-      width: auto;
-    }
-
-    .share-menu[open] {
-      z-index: 20;
-    }
-
-    .share-menu summary {
-      min-height: 46px;
-      border-radius: 999px;
-      border: 1px solid rgba(88, 166, 255, 0.42);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      width: auto;
-      padding: 0 20px;
-      cursor: pointer;
-      font-weight: 800;
-      color: var(--text);
-      background: linear-gradient(135deg, rgba(88, 166, 255, 0.98), rgba(121, 192, 255, 0.86));
-      box-shadow: 0 14px 36px rgba(88, 166, 255, 0.22);
-      list-style: none;
-    }
-
-    .share-menu summary:hover {
-      background: linear-gradient(135deg, rgba(121, 192, 255, 1), rgba(88, 166, 255, 0.92));
-      border-color: rgba(121, 192, 255, 0.78);
-    }
-
-    .share-menu summary::after {
-      content: "";
-      width: 7px;
-      height: 7px;
-      border-right: 2px solid currentColor;
-      border-bottom: 2px solid currentColor;
-      transform: rotate(45deg) translateY(-2px);
-      opacity: 0.76;
-    }
-
-    .share-menu[open] summary {
-      border-color: rgba(121, 192, 255, 0.82);
-    }
-
-    .share-menu[open] summary::after {
-      transform: rotate(225deg) translate(-2px, -1px);
-    }
-
-    .share-menu summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .share-menu-actions {
-      display: grid;
-      gap: 8px;
-      padding: 10px;
-      border: 1px solid var(--border);
-      border-radius: 18px;
-      background: rgba(13, 17, 23, 0.96);
-      box-shadow: var(--shadow);
-      position: absolute;
-      top: calc(100% + 8px);
-      left: 50%;
-      right: auto;
-      transform: translateX(-50%);
-      width: min(320px, calc(100vw - 32px));
-    }
-
-    .share-action {
-      justify-content: flex-start;
-      min-height: auto;
-      padding: 10px;
-      text-align: left;
-    }
-
-    .share-action-content {
-      display: grid;
-      gap: 2px;
-      line-height: 1.25;
-    }
-
-    .share-action-title {
-      color: var(--text);
-      font-size: 0.9rem;
-    }
-
-    .share-action-description {
-      color: var(--subtle);
-      font-size: 0.78rem;
-    }
-
     .hint {
       color: var(--subtle);
       font-size: 0.82rem;
@@ -452,10 +358,6 @@
       color: var(--subtle);
       font-size: 0.82rem;
       min-height: 1.2em;
-    }
-
-    .file-input {
-      display: none;
     }
 
     .results {
@@ -740,11 +642,6 @@
       main { width: min(100% - 20px, 1200px); padding-top: 26px; }
       .metrics { grid-template-columns: 1fr; }
       .mode-tabs { grid-template-columns: 1fr; }
-      .share-menu-actions {
-        position: static;
-        width: 100%;
-        margin-top: 8px;
-      }
     }
 
     @media print {
@@ -848,49 +745,24 @@
         Check an existing environment or plan backward from target dedicated users, shared users,
         and peak active sessions.
       </p>
-      <div class="hero-actions">
-        <details class="share-menu">
-          <summary>Share plan</summary>
-          <div class="share-menu-actions">
-            <button class="secondary-button share-action" id="copyShareUrl" type="button">
-              <span class="share-action-content">
-                <span class="share-action-title">Copy shareable URL</span>
-                <span class="share-action-description">Send a link with these inputs included.</span>
-              </span>
-            </button>
-            <button class="secondary-button share-action" id="printSummary" type="button">
-              <span class="share-action-content">
-                <span class="share-action-title">Print or save PDF</span>
-                <span class="share-action-description">Create a clean customer-facing summary.</span>
-              </span>
-            </button>
-            <button class="secondary-button share-action" id="exportConfig" type="button">
-              <span class="share-action-content">
-                <span class="share-action-title">Export configuration</span>
-                <span class="share-action-description">Download a JSON file to share.</span>
-              </span>
-            </button>
-            <button class="secondary-button share-action" id="importConfig" type="button">
-              <span class="share-action-content">
-                <span class="share-action-title">Import configuration</span>
-                <span class="share-action-description">Load inputs from a shared JSON file.</span>
-              </span>
-            </button>
-            <input class="file-input" id="importConfigFile" type="file" accept="application/json,.json">
-          </div>
-        </details>
-        <a class="hero-secondary-link" href="https://github.com/bwya77/W365-Flex-Calculator" target="_blank" rel="noopener noreferrer">View source</a>
-      </div>
-      <span class="share-status" id="shareStatus" role="status" aria-live="polite"></span>
     </header>
 
     <section class="layout">
       <aside class="panel">
         <div class="panel-header">
           <h2 id="inputPanelTitle">Your environment</h2>
-          <button class="panel-action" id="clear" type="button">Clear</button>
+          <div class="panel-header-actions">
+            <button class="icon-action" id="copyShareUrl" type="button" aria-label="Copy unique link" title="Copy unique link">
+              <svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10 13a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                <path d="M14 11a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+              </svg>
+            </button>
+            <button class="panel-action" id="clear" type="button">Clear</button>
+          </div>
         </div>
         <div class="panel-body inputs">
+          <span class="share-status" id="shareStatus" role="status" aria-live="polite"></span>
           <div class="mode-tabs" role="tablist" aria-label="Calculator mode">
             <button class="mode-tab active" type="button" data-mode="current" role="tab" aria-selected="true">Check current</button>
             <button class="mode-tab" type="button" data-mode="planning" role="tab" aria-selected="false">Plan new</button>
@@ -1096,10 +968,6 @@
 
     function setShareStatus(message) {
       byId("shareStatus").textContent = message;
-    }
-
-    function closeShareMenu() {
-      document.querySelector(".share-menu")?.removeAttribute("open");
     }
 
     function setWarnings(messages) {
@@ -1463,12 +1331,11 @@
       const url = getShareableUrl();
       try {
         await navigator.clipboard.writeText(url);
-        setShareStatus("Shareable URL copied.");
+        setShareStatus("Unique link copied to your clipboard.");
       } catch {
-        window.prompt("Copy this shareable URL", url);
-        setShareStatus("Shareable URL ready to copy.");
+        window.prompt("Copy this unique link", url);
+        setShareStatus("Unique link ready to copy.");
       }
-      closeShareMenu();
     }
 
     function loadConfigurationFromUrl() {
@@ -1487,20 +1354,6 @@
       }
     }
 
-    function exportConfiguration() {
-      const configuration = getConfiguration();
-      const blob = new Blob([JSON.stringify(configuration, null, 2)], { type: "application/json" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `w365-flex-${configuration.mode}-configuration.json`;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(link.href);
-      setShareStatus("Configuration exported.");
-      closeShareMenu();
-    }
-
     function importConfiguration(configuration) {
       if (!configuration || configuration.schema !== "w365-flex-calculator" || configuration.version !== 1) {
         setShareStatus("Import failed. This is not a W365 Flex Calculator configuration file.");
@@ -1511,12 +1364,6 @@
       setInputValues(configuration.planning, planningInputIds);
       setMode(configuration.mode);
       setShareStatus("Configuration imported.");
-    }
-
-    function printSummary() {
-      byId("answer").open = true;
-      closeShareMenu();
-      window.print();
     }
 
     inputIds.forEach((id) => byId(id).addEventListener("input", calculate));
@@ -1547,30 +1394,6 @@
       calculate();
     });
     byId("copyShareUrl").addEventListener("click", copyShareableUrl);
-    byId("printSummary").addEventListener("click", printSummary);
-    byId("exportConfig").addEventListener("click", exportConfiguration);
-    byId("importConfig").addEventListener("click", () => byId("importConfigFile").click());
-    byId("importConfigFile").addEventListener("change", async (event) => {
-      const [file] = event.target.files;
-      if (!file) {
-        return;
-      }
-
-      try {
-        importConfiguration(JSON.parse(await file.text()));
-      } catch {
-        setShareStatus("Import failed. Choose a valid JSON configuration file.");
-      } finally {
-        event.target.value = "";
-        closeShareMenu();
-      }
-    });
-    document.addEventListener("click", (event) => {
-      const menu = document.querySelector(".share-menu");
-      if (menu?.open && !menu.contains(event.target)) {
-        closeShareMenu();
-      }
-    });
     if (!loadConfigurationFromUrl()) {
       calculate();
     }
