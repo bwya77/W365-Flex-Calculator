@@ -152,7 +152,7 @@
       border: 1px solid var(--border);
       border-radius: 18px;
       box-shadow: var(--shadow);
-      overflow: hidden;
+      overflow: visible;
     }
 
     .panel-header {
@@ -306,20 +306,23 @@
     }
 
     .share-menu {
-      display: grid;
-      gap: 10px;
+      position: relative;
+      width: 100%;
     }
 
     .share-menu[open] {
-      grid-column: 1 / -1;
+      z-index: 20;
     }
 
     .share-menu summary {
       min-height: 42px;
       border-radius: 8px;
       border: 1px solid var(--border-strong);
-      display: grid;
-      place-items: center;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
       cursor: pointer;
       font-weight: 700;
       color: var(--text);
@@ -330,6 +333,25 @@
     .share-menu summary:hover {
       background: var(--ms-blue-soft);
       border-color: var(--ms-blue);
+    }
+
+    .share-menu summary::after {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-right: 2px solid currentColor;
+      border-bottom: 2px solid currentColor;
+      transform: rotate(45deg) translateY(-2px);
+      opacity: 0.76;
+    }
+
+    .share-menu[open] summary {
+      border-color: var(--ms-blue);
+      background: var(--ms-blue-soft);
+    }
+
+    .share-menu[open] summary::after {
+      transform: rotate(225deg) translate(-2px, -1px);
     }
 
     .share-menu summary::-webkit-details-marker {
@@ -343,6 +365,34 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       background: #0d1117;
+      box-shadow: var(--shadow);
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      width: calc(200% + 10px);
+    }
+
+    .share-action {
+      justify-content: flex-start;
+      min-height: auto;
+      padding: 10px;
+      text-align: left;
+    }
+
+    .share-action-content {
+      display: grid;
+      gap: 2px;
+      line-height: 1.25;
+    }
+
+    .share-action-title {
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .share-action-description {
+      color: var(--subtle);
+      font-size: 0.78rem;
     }
 
     .hint {
@@ -643,6 +693,11 @@
       .metrics { grid-template-columns: 1fr; }
       .mode-tabs,
       .button-row { grid-template-columns: 1fr; }
+      .share-menu-actions {
+        position: static;
+        width: 100%;
+        margin-top: 8px;
+      }
     }
 
     @media print {
@@ -856,12 +911,32 @@
           <div class="button-row">
             <button class="secondary-button" id="clear" type="button">Clear environment</button>
             <details class="share-menu">
-              <summary>Share plan</summary>
+              <summary>Share</summary>
               <div class="share-menu-actions">
-                <button class="secondary-button" id="copyShareUrl" type="button">Copy shareable URL</button>
-                <button class="secondary-button" id="printSummary" type="button">Print or save PDF</button>
-                <button class="secondary-button" id="exportConfig" type="button">Export configuration</button>
-                <button class="secondary-button" id="importConfig" type="button">Import configuration</button>
+                <button class="secondary-button share-action" id="copyShareUrl" type="button">
+                  <span class="share-action-content">
+                    <span class="share-action-title">Copy shareable URL</span>
+                    <span class="share-action-description">Send a link with these inputs included.</span>
+                  </span>
+                </button>
+                <button class="secondary-button share-action" id="printSummary" type="button">
+                  <span class="share-action-content">
+                    <span class="share-action-title">Print or save PDF</span>
+                    <span class="share-action-description">Create a clean customer-facing summary.</span>
+                  </span>
+                </button>
+                <button class="secondary-button share-action" id="exportConfig" type="button">
+                  <span class="share-action-content">
+                    <span class="share-action-title">Export configuration</span>
+                    <span class="share-action-description">Download a JSON file to share.</span>
+                  </span>
+                </button>
+                <button class="secondary-button share-action" id="importConfig" type="button">
+                  <span class="share-action-content">
+                    <span class="share-action-title">Import configuration</span>
+                    <span class="share-action-description">Load inputs from a shared JSON file.</span>
+                  </span>
+                </button>
                 <input class="file-input" id="importConfigFile" type="file" accept="application/json,.json">
               </div>
             </details>
@@ -974,6 +1049,10 @@
 
     function setShareStatus(message) {
       byId("shareStatus").textContent = message;
+    }
+
+    function closeShareMenu() {
+      document.querySelector(".share-menu")?.removeAttribute("open");
     }
 
     function setWarnings(messages) {
@@ -1342,6 +1421,7 @@
         window.prompt("Copy this shareable URL", url);
         setShareStatus("Shareable URL ready to copy.");
       }
+      closeShareMenu();
     }
 
     function loadConfigurationFromUrl() {
@@ -1371,6 +1451,7 @@
       link.remove();
       URL.revokeObjectURL(link.href);
       setShareStatus("Configuration exported.");
+      closeShareMenu();
     }
 
     function importConfiguration(configuration) {
@@ -1387,6 +1468,7 @@
 
     function printSummary() {
       byId("answer").open = true;
+      closeShareMenu();
       window.print();
     }
 
@@ -1433,6 +1515,13 @@
         setShareStatus("Import failed. Choose a valid JSON configuration file.");
       } finally {
         event.target.value = "";
+        closeShareMenu();
+      }
+    });
+    document.addEventListener("click", (event) => {
+      const menu = document.querySelector(".share-menu");
+      if (menu?.open && !menu.contains(event.target)) {
+        closeShareMenu();
       }
     });
     if (!loadConfigurationFromUrl()) {
